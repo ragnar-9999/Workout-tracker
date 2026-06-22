@@ -12,8 +12,8 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #080808; color: #F0F0F0; }
-    input { background: #1A1A1A; border: 1px solid #333; color: white; padding: 8px; border-radius: 6px; width: 100%; font-size: 14px; }
-    button { cursor: pointer; padding: 10px; border: none; background: #222; color: white; border-radius: 6px; }
+    button { cursor: pointer; border: none; font-family: inherit; }
+    input { background: #1A1A1A; border: 1px solid #333; color: #FFF; padding: 8px; border-radius: 6px; width: 100%; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -31,27 +31,18 @@
     const db = firebase.firestore();
 
     const PLAN = {
-      Monday: {focus:"Push", color:"#E8572A", exercises:[{name:"Incline Smith Machine Press", sets:4, reps:"10"}, {name:"Flat Machine Press", sets:3, reps:"12"}, {name:"Cable Fly High→Low", sets:3, reps:"12"}, {name:"Cable Fly Low→High", sets:3, reps:"12"}, {name:"DB Lateral Raise", sets:4, reps:"20"}, {name:"Cable Lateral Raise", sets:3, reps:"25"}, {name:"Cable Curl (Straight Bar)", sets:3, reps:"10"}, {name:"Bayesian Curl", sets:2, reps:"10"}, {name:"Hammer Curl", sets:3, reps:"12"}, {name:"Abs (Optional)", sets:3, reps:"15"}]},
-      Tuesday: {focus:"Pull", color:"#2A7BE8", exercises:[{name:"Lat Pulldown", sets:4, reps:"12"}, {name:"Triangle Cable Row", sets:3, reps:"10"}, {name:"Wide-Grip Row", sets:3, reps:"10"}, {name:"Lat Prayers", sets:3, reps:"12"}, {name:"Rear Delt Fly", sets:3, reps:"25"}, {name:"Face Pull", sets:3, reps:"15"}, {name:"Overhead Triceps Extension", sets:3, reps:"12"}, {name:"Rope Pushdown", sets:3, reps:"12"}, {name:"Cable Crunches", sets:3, reps:"15"}]},
-      Wednesday: {focus:"Rest", color:"#3A3A3A", exercises:[]},
-      Thursday: {focus:"Legs", color:"#16A34A", exercises:[{name:"Leg Press", sets:4, reps:"10"}, {name:"DB RDL", sets:3, reps:"10"}, {name:"Hamstring Curl", sets:3, reps:"12"}, {name:"Back Extension", sets:3, reps:"12"}, {name:"Hip Adduction", sets:3, reps:"15"}, {name:"Hip Abduction", sets:3, reps:"15"}, {name:"Calf Raises", sets:4, reps:"15"}]},
-      Friday: {focus:"Upper", color:"#9333EA", exercises:[{name:"Incline Smith Machine Press", sets:3, reps:"10"}, {name:"Lat Pulldown", sets:3, reps:"12"}, {name:"Wide-Grip Row", sets:3, reps:"10"}, {name:"Cable Fly", sets:3, reps:"12"}, {name:"Shoulder Press", sets:3, reps:"10"}, {name:"Lat Prayers", sets:3, reps:"12"}, {name:"DB Lateral Raise", sets:3, reps:"15"}, {name:"Rear Delt Fly", sets:3, reps:"15"}, {name:"Cable Curl (Straight Bar)", sets:3, reps:"12"}, {name:"Hammer Curl", sets:3, reps:"12"}, {name:"Overhead Triceps Extension", sets:3, reps:"12"}, {name:"Rope Pushdown", sets:3, reps:"12"}, {name:"Cable Crunches", sets:3, reps:"15"}]},
-      Saturday: {focus:"Rest", color:"#3A3A3A", exercises:[]},
-      Sunday: {focus:"Rest", color:"#3A3A3A", exercises:[]}
+      Mon: {focus:"Push", color:"#E8572A", exercises:[{name:"Incline Smith Machine Press", sets:4, reps:"10"}, {name:"Flat Machine Press", sets:3, reps:"12"}, {name:"Cable Fly High→Low", sets:3, reps:"12"}, {name:"Cable Fly Low→High", sets:3, reps:"12"}, {name:"DB Lateral Raise", sets:4, reps:"20"}, {name:"Cable Lateral Raise", sets:3, reps:"25"}, {name:"Cable Curl (Straight Bar)", sets:3, reps:"10"}, {name:"Bayesian Curl", sets:2, reps:"10"}, {name:"Hammer Curl", sets:3, reps:"12"}, {name:"Abs (Optional)", sets:3, reps:"15"}]},
+      Tue: {focus:"Pull", color:"#2A7BE8", exercises:[{name:"Lat Pulldown", sets:4, reps:"12"}, {name:"Triangle Cable Row", sets:3, reps:"10"}, {name:"Wide-Grip Row", sets:3, reps:"10"}, {name:"Lat Prayers", sets:3, reps:"12"}, {name:"Rear Delt Fly", sets:3, reps:"25"}, {name:"Face Pull", sets:3, reps:"15"}, {name:"Overhead Triceps Extension", sets:3, reps:"12"}, {name:"Rope Pushdown", sets:3, reps:"12"}, {name:"Cable Crunches", sets:3, reps:"15"}]},
+      Wed: {focus:"Rest", color:"#3A3A3A", exercises:[]},
+      Thu: {focus:"Legs", color:"#16A34A", exercises:[{name:"Leg Press", sets:4, reps:"10"}, {name:"DB RDL", sets:3, reps:"10"}, {name:"Hamstring Curl", sets:3, reps:"12"}, {name:"Back Extension", sets:3, reps:"12"}, {name:"Hip Adduction", sets:3, reps:"15"}, {name:"Hip Abduction", sets:3, reps:"15"}, {name:"Calf Raises", sets:4, reps:"15"}]},
+      Fri: {focus:"Upper", color:"#9333EA", exercises:[{name:"Incline Smith Machine Press", sets:3, reps:"10"}, {name:"Lat Pulldown", sets:3, reps:"12"}, {name:"Wide-Grip Row", sets:3, reps:"10"}, {name:"Cable Fly", sets:3, reps:"12"}, {name:"Shoulder Press", sets:3, reps:"10"}, {name:"Lat Prayers", sets:3, reps:"12"}, {name:"DB Lateral Raise", sets:3, reps:"15"}, {name:"Rear Delt Fly", sets:3, reps:"15"}, {name:"Cable Curl (Straight Bar)", sets:3, reps:"12"}, {name:"Hammer Curl", sets:3, reps:"12"}, {name:"Overhead Triceps Extension", sets:3, reps:"12"}, {name:"Rope Pushdown", sets:3, reps:"12"}, {name:"Cable Crunches", sets:3, reps:"15"}]},
+      Sat: {focus:"Rest", color:"#3A3A3A", exercises:[]},
+      Sun: {focus:"Rest", color:"#3A3A3A", exercises:[]}
     };
-
-    function Sparkline({history, color}) {
-      const weights = history.map(h => h.w).filter(w => w > 0);
-      if(weights.length < 2) return null;
-      const min = Math.min(...weights), max = Math.max(...weights), range = (max - min) || 1;
-      const W = 80, H = 25;
-      const pts = weights.map((v, i) => `${(i / (weights.length - 1)) * W},${H - ((v - min) / range) * (H - 8) - 4}`).join(" ");
-      return <svg width={W} height={H}><polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-    }
 
     function WorkoutTracker() {
       const [logs, setLogs] = React.useState({});
-      const [day, setDay] = React.useState("Monday");
+      const [day, setDay] = React.useState("Mon");
       const today = new Date().toISOString().split('T')[0];
 
       React.useEffect(() => {
@@ -69,20 +60,19 @@
         return Object.entries(logs[ex])
           .sort(([a], [b]) => b.localeCompare(a))
           .slice(0, 6)
-          .reverse()
           .map(([date, sets]) => ({ w: Math.max(...Object.values(sets).map(s => parseFloat(s.weight || 0))), date }));
       };
 
       return (
         <div style={{padding:"20px", maxWidth:"600px", margin:"auto"}}>
-          <div style={{display:"flex", gap:"10px", marginBottom:"20px"}}>
-            {Object.keys(PLAN).map(d => <button key={d} onClick={() => setDay(d)} style={{flex:1, background:day===d ? PLAN[d].color : "#222"}}>{d.slice(0,3)}</button>)}
+          <div style={{display:"flex", gap:"10px", marginBottom:"20px", overflowX:"auto"}}>
+            {Object.keys(PLAN).map(d => <button key={d} onClick={() => setDay(d)} style={{padding:"10px 15px", background:day===d ? PLAN[d].color : "#222", color:"#fff", borderRadius:"6px"}}>{d}</button>)}
           </div>
           {PLAN[day].exercises.map((ex, i) => (
             <div key={i} style={{marginBottom:"20px", padding:"15px", background:"#111", borderRadius:"10px"}}>
-              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"10px"}}>
-                <h4 style={{fontSize:"16px"}}>{ex.name}</h4>
-                <Sparkline history={getRecent(ex.name)} color={PLAN[day].color}/>
+              <h4 style={{marginBottom:"10px"}}>{ex.name}</h4>
+              <div style={{display:"flex", gap:"5px", marginBottom:"10px"}}>
+                {getRecent(ex.name).map((h, j) => <div key={j} style={{background:"#222", padding:"5px 10px", borderRadius:"4px", fontSize:"12px"}}>{h.w}kg</div>)}
               </div>
               {Array.from({length:ex.sets}).map((_, s) => (
                 <div key={s} style={{display:"flex", gap:"10px", marginBottom:"5px"}}>
