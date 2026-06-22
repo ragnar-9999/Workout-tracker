@@ -4,88 +4,420 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Workout Tracker</title>
-  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #080808; color: #F0F0F0; }
-    button { cursor: pointer; border: none; font-family: inherit; }
-    input { background: #1A1A1A; border: 1px solid #333; color: #FFF; padding: 8px; border-radius: 6px; width: 100%; font-size: 14px; }
+    input, button { font-family: inherit; }
+    input { outline: none; }
+    .tab-bar { display: flex; border-bottom: 1px solid #1A1A1A; background: #0A0A0A; overflow-x: auto; }
+    .tab-btn { background: transparent; border: none; border-bottom: 2px solid transparent; color: #444; padding: 11px 15px; cursor: pointer; font-size: 11px; font-weight: 400; white-space: nowrap; transition: all 0.15s; }
+    .tab-btn.active { background: #111; color: #F0F0F0; font-weight: 700; }
+    .ex-card { margin-bottom: 8px; background: #111; border-radius: 10px; border: 1px solid #1C1C1C; overflow: hidden; }
+    .ex-header { padding: 11px 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .ex-body { border-top: 1px solid #181818; }
+    .set-input { background: #0A0A0A; border: 1px solid #1E1E1E; border-radius: 6px; color: #E0E0E0; font-size: 12px; padding: 5px 9px; width: 100%; box-sizing: border-box; }
+    .set-input:focus { border-color: #333; }
+    .save-btn { width: 100%; padding: 13px; background: #1A1A1A; border: 1px solid #2A2A2A; border-radius: 10px; color: #888; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 4px; transition: all 0.2s; letter-spacing: 0.5px; }
+    .save-btn:hover { background: #222; color: #CCC; }
+    .save-btn.saving { color: #666; }
+    .save-btn.saved { background: #0F2A0F; border-color: #1A4A1A; color: #4ADE80; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1A3A1A; border: 1px solid #2A5A2A; color: #4ADE80; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="text/babel">
-    const firebaseConfig = {
-      apiKey: "AIzaSyAIXfdxKItrUVJI5m-PB_sK-73ucmWbm9I",
-      authDomain: "ragnar9999workouttracker.firebaseapp.com",
-      projectId: "ragnar9999workouttracker",
-      storageBucket: "ragnar9999workouttracker.firebasestorage.app",
-      messagingSenderId: "700941522087",
-      appId: "1:700941522087:web:7d26765db39b798960b782"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+<div id="root"></div>
+<div class="toast" id="toast"></div>
 
-    const PLAN = {
-      Mon: {focus:"Push", color:"#E8572A", exercises:[{name:"Incline Smith Machine Press", sets:4, reps:"10"}, {name:"Flat Machine Press", sets:3, reps:"12"}, {name:"Cable Fly High→Low", sets:3, reps:"12"}, {name:"Cable Fly Low→High", sets:3, reps:"12"}, {name:"DB Lateral Raise", sets:4, reps:"20"}, {name:"Cable Lateral Raise", sets:3, reps:"25"}, {name:"Cable Curl (Straight Bar)", sets:3, reps:"10"}, {name:"Bayesian Curl", sets:2, reps:"10"}, {name:"Hammer Curl", sets:3, reps:"12"}, {name:"Abs (Optional)", sets:3, reps:"15"}]},
-      Tue: {focus:"Pull", color:"#2A7BE8", exercises:[{name:"Lat Pulldown", sets:4, reps:"12"}, {name:"Triangle Cable Row", sets:3, reps:"10"}, {name:"Wide-Grip Row", sets:3, reps:"10"}, {name:"Lat Prayers", sets:3, reps:"12"}, {name:"Rear Delt Fly", sets:3, reps:"25"}, {name:"Face Pull", sets:3, reps:"15"}, {name:"Overhead Triceps Extension", sets:3, reps:"12"}, {name:"Rope Pushdown", sets:3, reps:"12"}, {name:"Cable Crunches", sets:3, reps:"15"}]},
-      Wed: {focus:"Rest", color:"#3A3A3A", exercises:[]},
-      Thu: {focus:"Legs", color:"#16A34A", exercises:[{name:"Leg Press", sets:4, reps:"10"}, {name:"DB RDL", sets:3, reps:"10"}, {name:"Hamstring Curl", sets:3, reps:"12"}, {name:"Back Extension", sets:3, reps:"12"}, {name:"Hip Adduction", sets:3, reps:"15"}, {name:"Hip Abduction", sets:3, reps:"15"}, {name:"Calf Raises", sets:4, reps:"15"}]},
-      Fri: {focus:"Upper", color:"#9333EA", exercises:[{name:"Incline Smith Machine Press", sets:3, reps:"10"}, {name:"Lat Pulldown", sets:3, reps:"12"}, {name:"Wide-Grip Row", sets:3, reps:"10"}, {name:"Cable Fly", sets:3, reps:"12"}, {name:"Shoulder Press", sets:3, reps:"10"}, {name:"Lat Prayers", sets:3, reps:"12"}, {name:"DB Lateral Raise", sets:3, reps:"15"}, {name:"Rear Delt Fly", sets:3, reps:"15"}, {name:"Cable Curl (Straight Bar)", sets:3, reps:"12"}, {name:"Hammer Curl", sets:3, reps:"12"}, {name:"Overhead Triceps Extension", sets:3, reps:"12"}, {name:"Rope Pushdown", sets:3, reps:"12"}, {name:"Cable Crunches", sets:3, reps:"15"}]},
-      Sat: {focus:"Rest", color:"#3A3A3A", exercises:[]},
-      Sun: {focus:"Rest", color:"#3A3A3A", exercises:[]}
-    };
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-    function WorkoutTracker() {
-      const [logs, setLogs] = React.useState({});
-      const [day, setDay] = React.useState("Mon");
-      const today = new Date().toISOString().split('T')[0];
+const firebaseConfig = {
+  apiKey: "AIzaSyAIXfdxKItrUVJI5m-PB_sK-73ucmWbm9I",
+  authDomain: "ragnar9999workouttracker.firebaseapp.com",
+  projectId: "ragnar9999workouttracker",
+  storageBucket: "ragnar9999workouttracker.firebasestorage.app",
+  messagingSenderId: "700941522087",
+  appId: "1:700941522087:web:7d26765db39b798960b782"
+};
 
-      React.useEffect(() => {
-        db.collection("workouts").doc("latest").onSnapshot(doc => { if (doc.exists) setLogs(doc.data()); });
-      }, []);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-      const saveLog = (ex, s, field, val) => {
-        const newLogs = { ...logs, [ex]: { ...logs[ex], [today]: { ...logs[ex]?.[today], [s]: { ...logs[ex]?.[today]?.[s], [field]: val } } } };
-        setLogs(newLogs);
-        db.collection("workouts").doc("latest").set(newLogs);
-      };
+// ── Helpers ────────────────────────────────────────────────────────────────
+function getWeekKey(date) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Sun
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  return monday.toISOString().slice(0, 10); // e.g. "2026-06-16"
+}
 
-      const getRecent = (ex) => {
-        if (!logs[ex]) return [];
-        return Object.entries(logs[ex])
-          .sort(([a], [b]) => b.localeCompare(a))
-          .slice(0, 6)
-          .map(([date, sets]) => ({ w: Math.max(...Object.values(sets).map(s => parseFloat(s.weight || 0))), date }));
-      };
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
 
-      return (
-        <div style={{padding:"20px", maxWidth:"600px", margin:"auto"}}>
-          <div style={{display:"flex", gap:"10px", marginBottom:"20px", overflowX:"auto"}}>
-            {Object.keys(PLAN).map(d => <button key={d} onClick={() => setDay(d)} style={{padding:"10px 15px", background:day===d ? PLAN[d].color : "#222", color:"#fff", borderRadius:"6px"}}>{d}</button>)}
-          </div>
-          {PLAN[day].exercises.map((ex, i) => (
-            <div key={i} style={{marginBottom:"20px", padding:"15px", background:"#111", borderRadius:"10px"}}>
-              <h4 style={{marginBottom:"10px"}}>{ex.name}</h4>
-              <div style={{display:"flex", gap:"5px", marginBottom:"10px"}}>
-                {getRecent(ex.name).map((h, j) => <div key={j} style={{background:"#222", padding:"5px 10px", borderRadius:"4px", fontSize:"12px"}}>{h.w}kg</div>)}
-              </div>
-              {Array.from({length:ex.sets}).map((_, s) => (
-                <div key={s} style={{display:"flex", gap:"10px", marginBottom:"5px"}}>
-                  <input placeholder="kg" defaultValue={logs?.[ex.name]?.[today]?.[s]?.weight || ""} onBlur={(e) => saveLog(ex.name, s, "weight", e.target.value)} />
-                  <input placeholder="reps" defaultValue={logs?.[ex.name]?.[today]?.[s]?.reps || ""} onBlur={(e) => saveLog(ex.name, s, "reps", e.target.value)} />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      );
+// ── Historical seed data ──────────────────────────────────────────────────
+const HISTORY = {"Push":{"Incline Smith Machine Press":{"last":{"date":"15/06/2026","weight":23.0},"best":{"date":"15/06/2026","weight":23.0},"recent":[{"date":"27/04/2026","weight":23.0},{"date":"04/05/2026","weight":23.0},{"date":"11/05/2026","weight":23.0},{"date":"18/05/2026","weight":23.0},{"date":"25/05/2026","weight":23.0},{"date":"01/06/2026","weight":23.0},{"date":"08/06/2026","weight":23.0},{"date":"15/06/2026","weight":23.0}],"sessions":59},"Flat Machine Press":{"last":{"date":"15/06/2026","weight":52.0},"best":{"date":"08/09/2025","weight":90.0},"recent":[{"date":"20/04/2026","weight":59.0},{"date":"27/04/2026","weight":59.0},{"date":"04/05/2026","weight":52.0},{"date":"11/05/2026","weight":52.0},{"date":"18/05/2026","weight":52.0},{"date":"01/06/2026","weight":52.0},{"date":"08/06/2026","weight":52.0},{"date":"15/06/2026","weight":52.0}],"sessions":62},"Cable Fly":{"last":{"date":"15/06/2026","weight":23.0},"best":{"date":"20/04/2026","weight":45.0},"recent":[{"date":"27/04/2026","weight":45.0},{"date":"04/05/2026","weight":45.0},{"date":"11/05/2026","weight":45.0},{"date":"18/05/2026","weight":45.0},{"date":"25/05/2026","weight":45.0},{"date":"01/06/2026","weight":23.0},{"date":"08/06/2026","weight":23.0},{"date":"15/06/2026","weight":23.0}],"sessions":63},"DB Lateral Raise":{"last":{"date":"01/06/2026","weight":10.0},"best":{"date":"01/06/2026","weight":10.0},"recent":[{"date":"23/03/2026","weight":12.0},{"date":"30/03/2026","weight":12.0},{"date":"06/04/2026","weight":12.0},{"date":"13/04/2026","weight":12.0},{"date":"20/04/2026","weight":12.0},{"date":"27/04/2026","weight":10.0},{"date":"04/05/2026","weight":10.0},{"date":"01/06/2026","weight":10.0}],"sessions":55},"Cable Lateral Raise":{"last":{"date":"30/03/2026","weight":23.0},"best":{"date":"30/03/2026","weight":23.0},"recent":[{"date":"02/02/2026","weight":18.0},{"date":"09/02/2026","weight":18.0},{"date":"16/02/2026","weight":18.0},{"date":"03/03/2026","weight":20.0},{"date":"09/03/2026","weight":20.0},{"date":"16/03/2026","weight":20.0},{"date":"23/03/2026","weight":23.0},{"date":"30/03/2026","weight":23.0}],"sessions":49},"Cable Curl (Straight Bar)":{"last":{"date":"15/06/2026","weight":56.0},"best":{"date":"15/06/2026","weight":56.0},"recent":[{"date":"13/04/2026","weight":47.0},{"date":"20/04/2026","weight":50.0},{"date":"27/04/2026","weight":52.0},{"date":"11/05/2026","weight":52.0},{"date":"18/05/2026","weight":52.0},{"date":"01/06/2026","weight":54.0},{"date":"08/06/2026","weight":54.0},{"date":"15/06/2026","weight":56.0}],"sessions":59},"Bayesian Curl":{"last":{"date":"01/06/2026","weight":27.0},"best":{"date":"08/05/2025","weight":41.0},"recent":[{"date":"30/03/2026","weight":27.0},{"date":"06/04/2026","weight":27.0},{"date":"13/04/2026","weight":29.0},{"date":"20/04/2026","weight":29.0},{"date":"04/05/2026","weight":23.0},{"date":"11/05/2026","weight":23.0},{"date":"18/05/2026","weight":23.0},{"date":"01/06/2026","weight":27.0}],"sessions":58},"Hammer Curl":{"last":{"date":"26/05/2026","weight":54.0},"best":{"date":"02/06/2025","weight":56.0},"recent":[{"date":"19/05/2026","weight":54.0},{"date":"26/05/2026","weight":54.0}],"sessions":3}},"Pull":{"Lat Pulldown":{"last":{"date":"16/06/2026","weight":73.0},"best":{"date":"16/09/2025","weight":73.0},"recent":[{"date":"28/04/2026","weight":72.0},{"date":"05/05/2026","weight":72.0},{"date":"12/05/2026","weight":72.0},{"date":"19/05/2026","weight":73.0},{"date":"26/05/2026","weight":73.0},{"date":"02/06/2026","weight":73.0},{"date":"09/06/2026","weight":73.0},{"date":"16/06/2026","weight":73.0}],"sessions":62},"Triangle Cable Row":{"last":{"date":"16/06/2026","weight":66.0},"best":{"date":"16/09/2025","weight":68.0},"recent":[{"date":"21/04/2026","weight":61.0},{"date":"28/04/2026","weight":64.0},{"date":"05/05/2026","weight":64.0},{"date":"12/05/2026","weight":64.0},{"date":"19/05/2026","weight":64.0},{"date":"02/06/2026","weight":66.0},{"date":"09/06/2026","weight":66.0},{"date":"16/06/2026","weight":66.0}],"sessions":58},"Wide-Grip Row":{"last":{"date":"16/06/2026","weight":28.0},"best":{"date":"15/10/2025","weight":28.0},"recent":[{"date":"28/04/2026","weight":28.0},{"date":"05/05/2026","weight":26.0},{"date":"12/05/2026","weight":28.0},{"date":"19/05/2026","weight":28.0},{"date":"26/05/2026","weight":28.0},{"date":"02/06/2026","weight":28.0},{"date":"09/06/2026","weight":28.0},{"date":"16/06/2026","weight":28.0}],"sessions":62},"Lat Prayers":{"last":{"date":"26/05/2026","weight":64.0},"best":{"date":"24/03/2026","weight":68.0},"recent":[{"date":"07/04/2026","weight":68.0},{"date":"14/04/2026","weight":68.0},{"date":"21/04/2026","weight":68.0},{"date":"28/04/2026","weight":68.0},{"date":"05/05/2026","weight":68.0},{"date":"12/05/2026","weight":68.0},{"date":"19/05/2026","weight":64.0},{"date":"26/05/2026","weight":64.0}],"sessions":58},"Rear Delt Fly":{"last":{"date":"26/05/2026","weight":32.0},"best":{"date":"25/06/2025","weight":47.3},"recent":[{"date":"07/04/2026","weight":29.0},{"date":"14/04/2026","weight":27.0},{"date":"21/04/2026","weight":27.0},{"date":"28/04/2026","weight":32.0},{"date":"05/05/2026","weight":32.0},{"date":"12/05/2026","weight":32.0},{"date":"19/05/2026","weight":32.0},{"date":"26/05/2026","weight":32.0}],"sessions":58},"Face Pull":{"last":{"date":"13/02/2026","weight":75.0},"best":{"date":"26/12/2025","weight":75.0},"recent":[{"date":"26/12/2025","weight":75.0},{"date":"02/01/2026","weight":75.0},{"date":"09/01/2026","weight":75.0},{"date":"16/01/2026","weight":75.0},{"date":"23/01/2026","weight":75.0},{"date":"30/01/2026","weight":75.0},{"date":"06/02/2026","weight":75.0},{"date":"13/02/2026","weight":75.0}],"sessions":26},"Overhead Triceps Extension":{"last":{"date":"16/06/2026","weight":52.0},"best":{"date":"28/04/2026","weight":54.0},"recent":[{"date":"31/03/2026","weight":52.0},{"date":"07/04/2026","weight":52.0},{"date":"14/04/2026","weight":52.0},{"date":"21/04/2026","weight":52.0},{"date":"28/04/2026","weight":54.0},{"date":"05/05/2026","weight":54.0},{"date":"19/05/2026","weight":50.0},{"date":"16/06/2026","weight":52.0}],"sessions":43},"Rope Pushdown":{"last":{"date":"16/06/2026","weight":20.0},"best":{"date":"16/06/2026","weight":20.0},"recent":[{"date":"14/04/2026","weight":20.0},{"date":"21/04/2026","weight":20.0},{"date":"28/04/2026","weight":20.0},{"date":"05/05/2026","weight":20.0},{"date":"19/05/2026","weight":20.0},{"date":"26/05/2026","weight":20.0},{"date":"02/06/2026","weight":20.0},{"date":"16/06/2026","weight":20.0}],"sessions":61},"Cable Crunches":{"last":{"date":"16/06/2026","weight":0},"best":{"date":"16/06/2026","weight":0},"recent":[],"sessions":5}},"Legs":{"Leg Press":{"last":{"date":"28/05/2026","weight":250.0},"best":{"date":"28/05/2026","weight":250.0},"recent":[{"date":"02/04/2026","weight":240.0},{"date":"09/04/2026","weight":245.0},{"date":"23/04/2026","weight":245.0},{"date":"30/04/2026","weight":247.0},{"date":"07/05/2026","weight":247.0},{"date":"14/05/2026","weight":247.0},{"date":"21/05/2026","weight":247.0},{"date":"28/05/2026","weight":250.0}],"sessions":51},"DB RDL":{"last":{"date":"28/05/2026","weight":36.0},"best":{"date":"19/03/2026","weight":36.0},"recent":[{"date":"02/04/2026","weight":36.0},{"date":"09/04/2026","weight":36.0},{"date":"23/04/2026","weight":36.0},{"date":"30/04/2026","weight":36.0},{"date":"07/05/2026","weight":36.0},{"date":"14/05/2026","weight":36.0},{"date":"21/05/2026","weight":36.0},{"date":"28/05/2026","weight":36.0}],"sessions":27},"Hamstring Curl":{"last":{"date":"21/05/2026","weight":66.0},"best":{"date":"11/12/2025","weight":73.0},"recent":[{"date":"26/03/2026","weight":63.6},{"date":"02/04/2026","weight":63.3},{"date":"09/04/2026","weight":63.3},{"date":"23/04/2026","weight":66.0},{"date":"30/04/2026","weight":66.0},{"date":"07/05/2026","weight":66.0},{"date":"14/05/2026","weight":66.0},{"date":"21/05/2026","weight":66.0}],"sessions":57},"Back Extension":{"last":{"date":"30/08/2025","weight":20.0},"best":{"date":"30/08/2025","weight":20.0},"recent":[{"date":"30/08/2025","weight":20.0}],"sessions":1},"Hip Adduction":{"last":{"date":"21/05/2026","weight":79.0},"best":{"date":"07/05/2026","weight":79.0},"recent":[{"date":"12/03/2026","weight":75.0},{"date":"19/03/2026","weight":75.0},{"date":"26/03/2026","weight":75.0},{"date":"02/04/2026","weight":75.0},{"date":"09/04/2026","weight":77.0},{"date":"07/05/2026","weight":79.0},{"date":"14/05/2026","weight":79.0},{"date":"21/05/2026","weight":79.0}],"sessions":55},"Hip Abduction":{"last":{"date":"23/10/2025","weight":95.0},"best":{"date":"23/10/2025","weight":95.0},"recent":[{"date":"24/08/2025","weight":81.0},{"date":"30/08/2025","weight":81.0},{"date":"06/09/2025","weight":93.0},{"date":"13/09/2025","weight":93.0},{"date":"20/09/2025","weight":93.0},{"date":"09/10/2025","weight":95.0},{"date":"16/10/2025","weight":95.0},{"date":"23/10/2025","weight":95.0}],"sessions":11},"Calf Raises":{"last":{"date":"21/05/2026","weight":138.0},"best":{"date":"21/05/2026","weight":138.0},"recent":[{"date":"07/03/2026","weight":129.0},{"date":"12/03/2026","weight":131.0},{"date":"19/03/2026","weight":131.0},{"date":"26/03/2026","weight":134.0},{"date":"02/04/2026","weight":134.0},{"date":"09/04/2026","weight":136.0},{"date":"14/05/2026","weight":136.0},{"date":"21/05/2026","weight":138.0}],"sessions":54}},"Upper":{"Incline Smith Machine Press":{"last":{"date":"23/05/2026","weight":25.0},"best":{"date":"12/09/2025","weight":52.0},"recent":[{"date":"27/03/2026","weight":26.0},{"date":"03/04/2026","weight":26.0},{"date":"10/04/2026","weight":26.0},{"date":"17/04/2026","weight":26.0},{"date":"24/04/2026","weight":21.25},{"date":"08/05/2026","weight":20.0},{"date":"16/05/2026","weight":25.0},{"date":"23/05/2026","weight":25.0}],"sessions":37},"Lat Pulldown":{"last":{"date":"23/05/2026","weight":73.0},"best":{"date":"12/09/2025","weight":73.0},"recent":[{"date":"27/03/2026","weight":70.0},{"date":"03/04/2026","weight":68.0},{"date":"10/04/2026","weight":70.0},{"date":"17/04/2026","weight":72.0},{"date":"24/04/2026","weight":72.0},{"date":"08/05/2026","weight":73.0},{"date":"16/05/2026","weight":73.0},{"date":"23/05/2026","weight":73.0}],"sessions":37},"Wide-Grip Row":{"last":{"date":"03/04/2026","weight":28.0},"best":{"date":"10/10/2025","weight":28.0},"recent":[{"date":"16/01/2026","weight":26.0},{"date":"23/01/2026","weight":26.0},{"date":"30/01/2026","weight":26.0},{"date":"06/02/2026","weight":26.0},{"date":"13/02/2026","weight":23.0},{"date":"20/02/2026","weight":26.0},{"date":"14/03/2026","weight":26.0},{"date":"03/04/2026","weight":28.0}],"sessions":28},"Cable Fly":{"last":{"date":"23/05/2026","weight":41.0},"best":{"date":"19/09/2025","weight":41.0},"recent":[{"date":"17/04/2026","weight":41.0},{"date":"24/04/2026","weight":41.0},{"date":"08/05/2026","weight":41.0},{"date":"16/05/2026","weight":41.0},{"date":"23/05/2026","weight":41.0}],"sessions":31},"Shoulder Press":{"last":{"date":"23/01/2026","weight":18.0},"best":{"date":"23/01/2026","weight":18.0},"recent":[{"date":"05/12/2025","weight":18.0},{"date":"11/12/2025","weight":20.0},{"date":"19/12/2025","weight":20.0},{"date":"26/12/2025","weight":18.0},{"date":"02/01/2026","weight":18.0},{"date":"09/01/2026","weight":18.0},{"date":"16/01/2026","weight":18.0},{"date":"23/01/2026","weight":18.0}],"sessions":14},"Lat Prayers":{"last":{"date":"23/05/2026","weight":64.0},"best":{"date":"10/04/2026","weight":68.0},"recent":[{"date":"14/03/2026","weight":64.0},{"date":"20/03/2026","weight":64.0},{"date":"03/04/2026","weight":64.0},{"date":"10/04/2026","weight":68.0},{"date":"17/04/2026","weight":68.0},{"date":"24/04/2026","weight":68.0},{"date":"16/05/2026","weight":50.0},{"date":"23/05/2026","weight":64.0}],"sessions":12},"DB Lateral Raise":{"last":{"date":"24/04/2026","weight":10.0},"best":{"date":"10/04/2026","weight":25.0},"recent":[{"date":"23/01/2026","weight":18.0},{"date":"30/01/2026","weight":18.0},{"date":"06/02/2026","weight":20.0},{"date":"13/02/2026","weight":20.0},{"date":"20/02/2026","weight":20.0},{"date":"14/03/2026","weight":23.0},{"date":"10/04/2026","weight":25.0},{"date":"24/04/2026","weight":10.0}],"sessions":28},"Rear Delt Fly":{"last":{"date":"24/04/2026","weight":32.0},"best":{"date":"17/04/2026","weight":32.0},"recent":[{"date":"06/02/2026","weight":23.0},{"date":"13/02/2026","weight":23.0},{"date":"20/02/2026","weight":23.0},{"date":"14/03/2026","weight":25.0},{"date":"20/03/2026","weight":27.0},{"date":"10/04/2026","weight":27.0},{"date":"17/04/2026","weight":32.0},{"date":"24/04/2026","weight":32.0}],"sessions":31},"Cable Curl (Straight Bar)":{"last":{"date":"23/05/2026","weight":54.0},"best":{"date":"23/05/2026","weight":54.0},"recent":[{"date":"27/03/2026","weight":32.0},{"date":"03/04/2026","weight":45.0},{"date":"10/04/2026","weight":47.0},{"date":"17/04/2026","weight":50.0},{"date":"24/04/2026","weight":52.0},{"date":"08/05/2026","weight":52.0},{"date":"16/05/2026","weight":52.0},{"date":"23/05/2026","weight":54.0}],"sessions":37},"Hammer Curl":{"last":{"date":"23/05/2026","weight":54.0},"best":{"date":"24/04/2026","weight":61.0},"recent":[{"date":"10/04/2026","weight":59.0},{"date":"17/04/2026","weight":59.0},{"date":"24/04/2026","weight":61.0},{"date":"08/05/2026","weight":61.0},{"date":"23/05/2026","weight":54.0}],"sessions":5},"Overhead Triceps Extension":{"last":{"date":"23/05/2026","weight":52.0},"best":{"date":"10/04/2026","weight":52.0},"recent":[{"date":"20/03/2026","weight":47.0},{"date":"27/03/2026","weight":50.0},{"date":"03/04/2026","weight":50.0},{"date":"10/04/2026","weight":52.0},{"date":"17/04/2026","weight":52.0},{"date":"24/04/2026","weight":52.0},{"date":"08/05/2026","weight":52.0},{"date":"23/05/2026","weight":52.0}],"sessions":35},"Rope Pushdown":{"last":{"date":"23/05/2026","weight":27.0},"best":{"date":"17/10/2025","weight":27.0},"recent":[{"date":"20/03/2026","weight":23.0},{"date":"27/03/2026","weight":23.0},{"date":"03/04/2026","weight":25.0},{"date":"10/04/2026","weight":25.0},{"date":"17/04/2026","weight":25.0},{"date":"24/04/2026","weight":27.0},{"date":"08/05/2026","weight":27.0},{"date":"23/05/2026","weight":27.0}],"sessions":35},"Cable Crunches":{"last":{"date":"23/05/2026","weight":0},"best":{"date":"23/05/2026","weight":0},"recent":[],"sessions":5}}};
+
+const PLAN = {
+  Monday: {focus:"Push", color:"#E8572A", histKey:"Push", exercises:[
+    {name:"Incline Smith Machine Press", sets:4, reps:"10", hKey:"Incline Smith Machine Press", note:"Per-side load — total is ×2. Upper chest first."},
+    {name:"Flat Machine Press", sets:3, reps:"12", hKey:"Flat Machine Press", note:"Seated machine — second compound while still strong"},
+    {name:"Cable Fly High→Low", sets:3, reps:"12", hKey:"Cable Fly", note:"Both hands, upper chest. 23 kg is correct."},
+    {name:"Cable Fly Low→High", sets:3, reps:"12", hKey:"Cable Fly", note:"Both hands, lower chest. Control the stretch."},
+    {name:"DB Lateral Raise", sets:4, reps:"20", hKey:"DB Lateral Raise", note:"Strict form, no momentum"},
+    {name:"Cable Lateral Raise", sets:3, reps:"25", hKey:"Cable Lateral Raise", note:"Constant tension burnout"},
+    {name:"Cable Curl (Straight Bar)", sets:3, reps:"10", hKey:"Cable Curl (Straight Bar)", note:"Arms last — chest/shoulders already taxed"},
+    {name:"Bayesian Curl", sets:2, reps:"10", hKey:"Bayesian Curl", note:"Long head stretch — cable behind body"},
+    {name:"Hammer Curl", sets:3, reps:"12", hKey:"Hammer Curl", note:"Brachialis thickness"},
+    {name:"Abs (Optional)", sets:3, reps:"15", hKey:null, note:"Skip if session ran long"},
+  ]},
+  Tuesday: {focus:"Pull", color:"#2A7BE8", histKey:"Pull", exercises:[
+    {name:"Lat Pulldown", sets:4, reps:"12", hKey:"Lat Pulldown", note:"Width builder — do first, fresh"},
+    {name:"Triangle Cable Row", sets:3, reps:"10", hKey:"Triangle Cable Row", note:"Lat thickness"},
+    {name:"Wide-Grip Row", sets:3, reps:"10", hKey:"Wide-Grip Row", note:"Upper back / rhomboids"},
+    {name:"Lat Prayers", sets:3, reps:"12", hKey:"Lat Prayers", note:"Pure lat isolation — slow"},
+    {name:"Rear Delt Fly", sets:3, reps:"25", hKey:"Rear Delt Fly", note:"Light, feel the rear delt"},
+    {name:"Face Pull", sets:3, reps:"15", hKey:"Face Pull", note:"Rotator cuff health — never skip"},
+    {name:"Overhead Triceps Extension", sets:3, reps:"12", hKey:"Overhead Triceps Extension", note:"Cable — long head stretch. ~50 kg range."},
+    {name:"Rope Pushdown", sets:3, reps:"12", hKey:"Rope Pushdown", note:"Single handed ~20 kg — lateral head"},
+    {name:"Cable Crunches", sets:3, reps:"15", hKey:"Cable Crunches", note:"Core — can do multiple times/week"},
+  ]},
+  Wednesday: {focus:"Rest", color:"#3A3A3A", histKey:null, exercises:[]},
+  Thursday: {focus:"Legs", color:"#16A34A", histKey:"Legs", exercises:[
+    {name:"Leg Press", sets:4, reps:"10", hKey:"Leg Press", note:"Primary compound — go heavy. Best: 250 kg."},
+    {name:"DB RDL", sets:3, reps:"10", hKey:"DB RDL", note:"Control descent. Stalled at 36 kg — push in bulk."},
+    {name:"Hamstring Curl", sets:3, reps:"12", hKey:"Hamstring Curl", note:"Contracted position — pairs with RDL"},
+    {name:"Back Extension", sets:3, reps:"12", hKey:"Back Extension", note:"Plate on chest — glutes + hamstrings + lower back"},
+    {name:"Hip Adduction", sets:3, reps:"15", hKey:"Hip Adduction", note:"Inner thigh shape"},
+    {name:"Hip Abduction", sets:3, reps:"15", hKey:"Hip Abduction", note:"Outer glute — maxed machine, maintain stimulus"},
+    {name:"Calf Raises", sets:4, reps:"15", hKey:"Calf Raises", note:"Full stretch at bottom, pause at top. Best: 138 kg."},
+  ]},
+  Friday: {focus:"Upper", color:"#9333EA", histKey:"Upper", exercises:[
+    {name:"Incline Smith Machine Press", sets:3, reps:"10", hKey:"Incline Smith Machine Press", note:"Per-side load — total is ×2. Upper chest priority."},
+    {name:"Lat Pulldown", sets:3, reps:"12", hKey:"Lat Pulldown", note:"V-taper — 9-month plateau at 73 kg. Push this."},
+    {name:"Wide-Grip Row", sets:3, reps:"10", hKey:"Wide-Grip Row", note:"Upper back thickness"},
+    {name:"Cable Fly", sets:3, reps:"12", hKey:"Cable Fly", note:"Pick angle based on what's lagging"},
+    {name:"Shoulder Press", sets:3, reps:"10", hKey:"Shoulder Press", note:"Moved from Monday — fits here cleanly"},
+    {name:"Lat Prayers", sets:3, reps:"12", hKey:"Lat Prayers", note:"Lat isolation after row"},
+    {name:"DB Lateral Raise", sets:3, reps:"15", hKey:"DB Lateral Raise", note:"Shoulder shape"},
+    {name:"Rear Delt Fly", sets:3, reps:"15", hKey:"Rear Delt Fly", note:"Balance front/rear delt ratio"},
+    {name:"Cable Curl (Straight Bar)", sets:3, reps:"12", hKey:"Cable Curl (Straight Bar)", note:"Biceps — great upward trend"},
+    {name:"Hammer Curl", sets:3, reps:"12", hKey:"Hammer Curl", note:"Superset with cable curl if short on time"},
+    {name:"Overhead Triceps Extension", sets:3, reps:"12", hKey:"Overhead Triceps Extension", note:"Long head priority — cable station"},
+    {name:"Rope Pushdown", sets:3, reps:"12", hKey:"Rope Pushdown", note:"Single handed finisher"},
+    {name:"Cable Crunches", sets:3, reps:"15", hKey:"Cable Crunches", note:"End of session core"},
+  ]},
+  Saturday: {focus:"Rest", color:"#3A3A3A", histKey:null, exercises:[]},
+  Sunday: {focus:"Rest", color:"#3A3A3A", histKey:null, exercises:[]},
+};
+
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let activeDay = DAYS[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] || "Monday";
+let logs = {};         // { day: { exName: { setIdx: { weight, reps, note } } } }
+let weekMaxes = {};    // { day: { exName: maxWeight } } — loaded from Firestore
+let expandedEx = null;
+let saveStatus = "idle"; // idle | saving | saved
+
+const weekKey = getWeekKey(new Date());
+
+// ── Firebase load ──────────────────────────────────────────────────────────
+async function loadFromFirebase() {
+  try {
+    // Load week maxes
+    const weekRef = doc(db, "weeks", weekKey);
+    const weekSnap = await getDoc(weekRef);
+    if (weekSnap.exists()) weekMaxes = weekSnap.data() || {};
+
+    // Load current logs for today
+    const logsRef = doc(db, "sessions", `${weekKey}_${activeDay}`);
+    const logsSnap = await getDoc(logsRef);
+    if (logsSnap.exists()) {
+      logs[activeDay] = logsSnap.data().sets || {};
     }
-    ReactDOM.createRoot(document.getElementById('root')).render(<WorkoutTracker />);
-  </script>
+  } catch(e) {
+    console.error("Firebase load error:", e);
+  }
+  render();
+}
+
+// ── Firebase save ──────────────────────────────────────────────────────────
+async function saveToFirebase() {
+  saveStatus = "saving";
+  render();
+
+  try {
+    // Compute week maxes from current logs for this day
+    const dayPlan = PLAN[activeDay];
+    const dayLogs = logs[activeDay] || {};
+    const updatedMaxes = { ...(weekMaxes[activeDay] || {}) };
+
+    for (const ex of dayPlan.exercises) {
+      const exLogs = dayLogs[ex.name] || {};
+      const weights = Object.values(exLogs)
+        .map(s => parseFloat(s.weight))
+        .filter(w => !isNaN(w) && w > 0);
+      if (weights.length > 0) {
+        const maxThisSession = Math.max(...weights);
+        const prevMax = updatedMaxes[ex.name] || 0;
+        updatedMaxes[ex.name] = Math.max(maxThisSession, prevMax);
+      }
+    }
+
+    // Save session logs
+    await setDoc(doc(db, "sessions", `${weekKey}_${activeDay}`), {
+      day: activeDay,
+      week: weekKey,
+      savedAt: new Date().toISOString(),
+      sets: dayLogs
+    });
+
+    // Save/update week maxes
+    const weekRef = doc(db, "weeks", weekKey);
+    const weekSnap = await getDoc(weekRef);
+    const existing = weekSnap.exists() ? weekSnap.data() : {};
+    existing[activeDay] = updatedMaxes;
+    await setDoc(weekRef, existing);
+    weekMaxes = existing;
+
+    saveStatus = "saved";
+    showToast("✓ Saved to cloud");
+    setTimeout(() => { saveStatus = "idle"; render(); }, 2500);
+  } catch(e) {
+    saveStatus = "idle";
+    showToast("⚠ Save failed — check connection");
+    console.error("Save error:", e);
+  }
+  render();
+}
+
+// ── Get display weight for exercise card ──────────────────────────────────
+function getDisplayWeight(dayName, exName, histKey, dayHistKey) {
+  // 1. Check week max from Firebase
+  const weekMax = weekMaxes?.[dayName]?.[exName];
+  if (weekMax && weekMax > 0) return { weight: weekMax, label: "This week" };
+
+  // 2. Fall back to historical last
+  if (!histKey || !dayHistKey) return null;
+  const hist = HISTORY[dayHistKey]?.[histKey];
+  if (!hist?.last?.weight) return null;
+  return { weight: hist.last.weight, label: "Last session" };
+}
+
+function getBestWeight(histKey, dayHistKey) {
+  if (!histKey || !dayHistKey) return null;
+  const hist = HISTORY[dayHistKey]?.[histKey];
+  return hist?.best?.weight || null;
+}
+
+function getRecent(histKey, dayHistKey) {
+  if (!histKey || !dayHistKey) return [];
+  return HISTORY[dayHistKey]?.[histKey]?.recent || [];
+}
+
+// ── Sparkline ─────────────────────────────────────────────────────────────
+function sparklineSVG(data, color) {
+  if (!data || data.length < 2) return "";
+  const vals = data.map(d => d.weight).filter(v => v > 0);
+  if (vals.length < 2) return "";
+  const min = Math.min(...vals), max = Math.max(...vals), range = max - min || 1;
+  const W = 72, H = 22;
+  const pts = vals.map((v, i) => `${(i/(vals.length-1))*W},${H-((v-min)/range)*(H-4)-2}`).join(" ");
+  const last = pts.split(" ").pop().split(",");
+  return `<svg width="${W}" height="${H}" style="display:block;flex-shrink:0">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="${color}"/>
+  </svg>`;
+}
+
+// ── Get log value ─────────────────────────────────────────────────────────
+function getLog(d, ex, s, f) {
+  return logs?.[d]?.[ex]?.[s]?.[f] || "";
+}
+
+function setLog(d, ex, s, f, v) {
+  if (!logs[d]) logs[d] = {};
+  if (!logs[d][ex]) logs[d][ex] = {};
+  if (!logs[d][ex][s]) logs[d][ex][s] = {};
+  logs[d][ex][s][f] = v;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function render() {
+  const day = PLAN[activeDay];
+  const isRest = day.focus === "Rest";
+
+  let tabsHTML = DAYS.map(d => {
+    const dp = PLAN[d];
+    const active = d === activeDay;
+    return `<button class="tab-btn ${active?"active":""}" onclick="switchDay('${d}')" style="border-bottom-color:${active?dp.color:'transparent'}">
+      <div>${d.slice(0,3).toUpperCase()}</div>
+      <div style="font-size:9px;letter-spacing:1px;margin-top:2px;color:${active?dp.color:'#333'}">${dp.focus.toUpperCase()}</div>
+    </button>`;
+  }).join("");
+
+  let contentHTML = "";
+
+  if (isRest) {
+    contentHTML = `<div style="padding:40px;text-align:center"><div style="font-size:36px;margin-bottom:10px">💤</div><div style="color:#444;font-size:14px">Rest day. Recover, eat, sleep.</div></div>`;
+  } else {
+    const exCards = day.exercises.map((ex, i) => {
+      const expanded = expandedEx === i;
+      const bw = ex.name.includes("Crunch") || ex.name.includes("Abs");
+      const isSmith = ex.name.includes("Smith");
+      const displayW = getDisplayWeight(activeDay, ex.name, ex.hKey, day.histKey);
+      const bestW = getBestWeight(ex.hKey, day.histKey);
+      const recent = getRecent(ex.hKey, day.histKey);
+      const sparkline = (!bw && recent.length > 1) ? sparklineSVG(recent, day.color) : "";
+
+      const isThisWeek = weekMaxes?.[activeDay]?.[ex.name] > 0;
+
+      let pillsHTML = `<span style="font-size:10px;color:${day.color};background:${day.color}20;padding:2px 7px;border-radius:20px;font-weight:600">${ex.sets}×${ex.reps}</span>`;
+      if (!bw && displayW) {
+        const labelColor = isThisWeek ? "#4ADE80" : "#BBB";
+        const labelText = isThisWeek ? "This week" : "Last session";
+        pillsHTML += `<span style="font-size:10px;color:#555">${labelText}: <span style="color:${labelColor};font-weight:600">${displayW.weight} kg${isSmith?" /side":""}</span></span>`;
+      }
+      if (!bw && bestW > 0) {
+        pillsHTML += `<span style="font-size:10px;color:#555">Best: <span style="color:#FFB800;font-weight:600">${bestW} kg${isSmith?" /side":""}</span></span>`;
+      }
+
+      let expandedHTML = "";
+      if (expanded) {
+        // Recent history
+        let recentHTML = "";
+        if (recent.length > 0 && !bw) {
+          const items = recent.slice(-6).map(r =>
+            `<div style="background:#0A0A0A;border:1px solid #1E1E1E;border-radius:6px;padding:4px 8px;text-align:center">
+              <div style="font-size:11px;font-weight:600;color:#DDD">${r.weight} kg</div>
+              <div style="font-size:9px;color:#3A3A3A;margin-top:1px">${r.date}</div>
+            </div>`
+          ).join("");
+          recentHTML = `<div style="padding:10px 13px;border-bottom:1px solid #161616">
+            <div style="font-size:9px;color:#3A3A3A;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Recent sessions</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">${items}</div>
+          </div>`;
+        }
+
+        // Set rows
+        const colTemplate = bw ? "28px 1fr 1fr" : "28px 1fr 1fr 1fr";
+        const headerCols = bw
+          ? `<div style="font-size:9px;color:#2A2A2A;text-transform:uppercase;letter-spacing:1px">#</div>
+             <div style="font-size:9px;color:#2A2A2A;text-transform:uppercase;letter-spacing:1px">Reps</div>
+             <div style="font-size:9px;color:#2A2A2A;text-transform:uppercase;letter-spacing:1px">Note</div>`
+          : `<div style="font-size:9px;color:#2A2A2A;text-transform:uppercase;letter-spacing:1px">#</div>
+             <div style="font-size:9px;color:#2A2A2A;text-transform:uppercase;letter-spacing:1px">kg${isSmith?" /side":""}</div>
+             <div style="font-size:9px;color:#2A2A2A;text-transform:uppercase;letter-spacing:1px">Reps</div>
+             <div style="font-size:9px;color:#2A2A2A;text-transform:uppercase;letter-spacing:1px">Note</div>`;
+
+        const phW = displayW?.weight ? `${displayW.weight}` : "kg";
+        const setRows = Array.from({length: ex.sets}).map((_, si) => {
+          const wVal = getLog(activeDay, ex.name, si, "weight");
+          const rVal = getLog(activeDay, ex.name, si, "reps");
+          const nVal = getLog(activeDay, ex.name, si, "note");
+          if (bw) {
+            return `<div style="display:grid;grid-template-columns:${colTemplate};gap:5px;margin-bottom:5px">
+              <div style="font-size:11px;color:#3A3A3A;display:flex;align-items:center">${si+1}</div>
+              <input class="set-input" value="${rVal}" placeholder="reps" onchange="updateLog('${activeDay}','${ex.name}',${si},'reps',this.value)">
+              <input class="set-input" value="${nVal}" placeholder="—" onchange="updateLog('${activeDay}','${ex.name}',${si},'note',this.value)">
+            </div>`;
+          }
+          return `<div style="display:grid;grid-template-columns:${colTemplate};gap:5px;margin-bottom:5px">
+            <div style="font-size:11px;color:#3A3A3A;display:flex;align-items:center">${si+1}</div>
+            <input class="set-input" value="${wVal}" placeholder="${phW}" onchange="updateLog('${activeDay}','${ex.name}',${si},'weight',this.value)">
+            <input class="set-input" value="${rVal}" placeholder="${ex.reps}" onchange="updateLog('${activeDay}','${ex.name}',${si},'reps',this.value)">
+            <input class="set-input" value="${nVal}" placeholder="—" onchange="updateLog('${activeDay}','${ex.name}',${si},'note',this.value)">
+          </div>`;
+        }).join("");
+
+        expandedHTML = `<div style="border-top:1px solid #181818">
+          <div style="padding:7px 13px;font-size:11px;color:#555;font-style:italic;border-bottom:1px solid #161616">${ex.note}</div>
+          ${recentHTML}
+          <div style="padding:10px 13px">
+            <div style="display:grid;grid-template-columns:${colTemplate};gap:5px;margin-bottom:5px">${headerCols}</div>
+            ${setRows}
+          </div>
+        </div>`;
+      }
+
+      return `<div class="ex-card">
+        <div class="ex-header" onclick="toggleEx(${i})">
+          <div style="width:21px;height:21px;border-radius:5px;background:${day.color}20;border:1px solid ${day.color}40;display:flex;align-items:center;justify-content:center;font-size:9px;color:${day.color};font-weight:700;flex-shrink:0">${i+1}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;margin-bottom:3px">${ex.name}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${pillsHTML}</div>
+          </div>
+          ${sparkline}
+          <div style="color:#2A2A2A;font-size:11px;flex-shrink:0">${expanded?"▲":"▼"}</div>
+        </div>
+        ${expandedHTML}
+      </div>`;
+    }).join("");
+
+    const saveBtnClass = saveStatus === "saving" ? "save-btn saving" : saveStatus === "saved" ? "save-btn saved" : "save-btn";
+    const saveBtnText = saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "✓ Saved" : "Save Session";
+
+    contentHTML = `<div style="padding:14px 14px 60px;max-width:860px;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="width:3px;height:30px;border-radius:2px;background:${day.color}"></div>
+        <div>
+          <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase">${activeDay}</div>
+          <div style="font-size:17px;font-weight:700">${day.focus} Day</div>
+        </div>
+      </div>
+      ${exCards}
+      <button class="${saveBtnClass}" onclick="doSave()" ${saveStatus==="saving"?"disabled":""}>${saveBtnText}</button>
+    </div>`;
+  }
+
+  document.getElementById("root").innerHTML = `
+    <div style="background:#0F0F0F;border-bottom:1px solid #1A1A1A;padding:16px 20px">
+      <div style="font-size:9px;letter-spacing:3px;color:#444;text-transform:uppercase;margin-bottom:3px">Sanjeeb · Training Log</div>
+      <div style="font-size:19px;font-weight:700">Workout Tracker</div>
+    </div>
+    <div class="tab-bar">${tabsHTML}</div>
+    ${contentHTML}
+  `;
+}
+
+// ── Global handlers ────────────────────────────────────────────────────────
+window.switchDay = async function(d) {
+  activeDay = d;
+  expandedEx = null;
+  saveStatus = "idle";
+  render();
+  // Load this day's logs from Firebase
+  try {
+    const logsSnap = await getDoc(doc(db, "sessions", `${weekKey}_${d}`));
+    if (logsSnap.exists()) logs[d] = logsSnap.data().sets || {};
+  } catch(e) {}
+  render();
+};
+
+window.toggleEx = function(i) {
+  expandedEx = expandedEx === i ? null : i;
+  render();
+};
+
+window.updateLog = function(d, ex, s, f, v) {
+  setLog(d, ex, s, f, v);
+};
+
+window.doSave = function() {
+  saveToFirebase();
+};
+
+// ── Init ──────────────────────────────────────────────────────────────────
+render(); // show skeleton immediately
+loadFromFirebase(); // then hydrate with real data
+</script>
 </body>
 </html>
