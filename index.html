@@ -58,37 +58,33 @@
         db.collection("workouts").doc("latest").onSnapshot(doc => { if (doc.exists) setLogs(doc.data()); });
       }, []);
 
-      // Uses current timestamp to ensure every save is unique
-      const getTimestamp = () => new Date().toISOString().split('T')[0];
+      const getWeekKey = () => { const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1); return d.toISOString().split('T')[0]; };
       
-      const formatDate = (dateStr) => {
-        const parts = dateStr.split('-');
-        return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
-      };
-
       const setLog = (d, ex, s, f, v) => {
-        const time = getTimestamp();
-        const newLogs = { ...logs, [d]: { ...logs[d], [ex]: { ...logs[d]?.[ex], [time]: { ...logs[d]?.[ex]?.[time], [s]: { ...logs[d]?.[ex]?.[time]?.[s], [f]: v } } } } };
+        const week = getWeekKey();
+        const newLogs = { ...logs, [d]: { ...logs[d], [ex]: { ...logs[d]?.[ex], [week]: { ...logs[d]?.[ex]?.[week], [s]: { ...logs[d]?.[ex]?.[week]?.[s], [f]: v } } } } };
         setLogs(newLogs);
         db.collection("workouts").doc("latest").set(newLogs);
       };
 
-      const getLog = (d, ex, s, f) => { 
-        const time = getTimestamp();
-        return logs?.[d]?.[ex]?.[time]?.[s]?.[f] || ""; 
-      };
+      const getLog = (d, ex, s, f) => { const week = getWeekKey(); return logs?.[d]?.[ex]?.[week]?.[s]?.[f] || ""; };
       
       const getRecent = (exName) => {
         let history = [];
-        DAYS.forEach(d => {
-          if(logs[d] && logs[d][exName]) {
-            Object.entries(logs[d][exName]).forEach(([date, sets]) => {
+        Object.entries(logs).forEach(([day, exercises]) => {
+          if(exercises[exName]) {
+            Object.entries(exercises[exName]).forEach(([week, sets]) => {
               const maxW = Math.max(...Object.values(sets).map(s => parseFloat(s.weight || 0)));
-              if(maxW > 0) history.push({weight: maxW, date: date});
+              if(maxW > 0) history.push({weight: maxW, date: week});
             });
           }
         });
-        return history.sort((a,b) => b.date.localeCompare(a.date)).slice(0, 6).reverse();
+        return history.sort((a,b) => a.date.localeCompare(b.date)).slice(-6);
+      };
+
+      const formatDate = (dateStr) => {
+        const d = new Date(dateStr);
+        return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`;
       };
 
       const day = PLAN[activeDay];
