@@ -415,7 +415,16 @@ function render(){
 
   let content="";
   if(isRest){
-    content=`<div style="padding:40px;text-align:center"><div style="font-size:36px;margin-bottom:10px">💤</div><div style="color:#444;font-size:14px">Rest day. Recover, eat, sleep.</div></div>`;
+    const isSunday = activeDay === "Sunday";
+    content=`<div style="padding:40px;text-align:center">
+      <div style="font-size:36px;margin-bottom:10px">💤</div>
+      <div style="color:#444;font-size:14px">Rest day. Recover, eat, sleep.</div>
+      ${isSunday ? `<div style="margin-top:32px;padding-top:24px;border-top:1px solid #1A1A1A;">
+        <div style="font-size:11px;color:#555;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">Weekly Review</div>
+        <button onclick="exportForCoach()" style="padding:12px 24px;background:#0A0A1A;border:1px solid #2A2A5A;border-radius:10px;color:#6A8AFF;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">📋 Export Week for Coach</button>
+        <div style="font-size:10px;color:#333;margin-top:10px;">Copies this week's lifts — paste into Claude with your weight, waist & BF numbers</div>
+      </div>` : ""}
+    </div>`;
   }else{
     const cards=day.exercises.map((ex,i)=>{
       const expanded=expandedEx===i;
