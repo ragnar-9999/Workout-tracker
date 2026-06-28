@@ -575,6 +575,106 @@ window.autoAdv=function(e,nextId){
   }
 };
 
+
+// ── Export for Coach ──────────────────────────────────────────────────────
+async function exportForCoach() {
+  if (!currentUser) return;
+  const lines = [];
+  const weekStart = weekKey;
+  lines.push("═══════════════════════════════");
+  lines.push("WEEKLY LIFT SUMMARY — Coach Export");
+  lines.push(`Week of ${weekStart}`);
+  lines.push(`Generated: ${todayStr()}`);
+  lines.push("═══════════════════════════════");
+
+  const trainingDays = ["Monday","Tuesday","Thursday","Friday"];
+
+  for (const dayName of trainingDays) {
+    const day = PLAN[dayName];
+    if (!day.histKey) continue;
+
+    try {
+      const sessSnap = await getDoc(doc(db, `users/${currentUser.uid}/sessions/${weekKey}_${dayName}`));
+      if (!sessSnap.exists()) continue;
+
+      const sets = sessSnap.data().sets || {};
+      if (Object.keys(sets).length === 0) continue;
+
+      lines.push("");
+      lines.push(`── ${dayName.toUpperCase()} (${day.focus}) ──`);
+
+      for (const ex of day.exercises) {
+        const exSets = sets[ex.name];
+        if (!exSets || Object.keys(exSets).length === 0) continue;
+
+        const entries = Object.values(exSets);
+        const weights = entries.map(s => parseFloat(s.weight)).filter(w => !isNaN(w) && w > 0);
+        const reps = entries.map(s => parseInt(s.reps)).filter(r => !isNaN(r) && r > 0);
+
+        if (weights.length === 0) continue;
+
+        const maxW = Math.max(...weights);
+        const avgReps = reps.length > 0 ? Math.round(reps.reduce((a,b)=>a+b,0)/reps.length) : '?';
+        const setCount = entries.filter(s => parseFloat(s.weight) > 0).length;
+
+        // Get previous best from seed/cache
+        const recent = getRecent(day.histKey, ex.name);
+        const prevEntries = recent.filter(e => e.date !== todayStr() && !isThisWeek(e.date));
+        const prevBest = prevEntries.length > 0 ? prevEntries[prevEntries.length-1] : null;
+
+        let trend = "";
+        if (prevBest) {
+          if (maxW > prevBest.weight) trend = " ↑ PR";
+          else if (maxW < prevBest.weight) trend = " ↓";
+          else trend = " =";
+        }
+
+        const isSmith = !!ex.smith;
+        const sideNote = isSmith ? " /side" : "";
+        lines.push(`${ex.name}: ${maxW}kg${sideNote} × ${avgReps} reps (${setCount} sets)${trend}`);
+      }
+    } catch(e) {
+      console.error(`Export error for ${dayName}:`, e);
+    }
+  }
+
+  lines.push("");
+  lines.push("═══════════════════════════════");
+  lines.push("Paste this into Claude with your");
+  lines.push("Sunday check-in numbers.");
+  lines.push("═══════════════════════════════");
+
+  const text = lines.join("\n");
+
+  // Copy to clipboard
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("✓ Copied to clipboard — paste in Claude");
+  } catch(e) {
+    // Fallback: show in modal
+    window._exportText = text;
+    showExportModal(text);
+  }
+}
+
+function showExportModal(text) {
+  const modal = document.createElement('div');
+  modal.style.cssText = "position:fixed;inset:0;background:#000000CC;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+  modal.innerHTML = `
+    <div style="background:#111;border:1px solid #2A2A2A;border-radius:12px;padding:20px;width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;gap:12px;">
+      <div style="font-size:14px;font-weight:700;color:#F0F0F0;">Export for Coach</div>
+      <div style="font-size:11px;color:#555;">Select all and copy, then paste into Claude</div>
+      <textarea readonly style="background:#0A0A0A;border:1px solid #1E1E1E;border-radius:8px;color:#AAA;font-size:11px;padding:12px;flex:1;min-height:200px;resize:none;font-family:monospace;line-height:1.5;">${text}</textarea>
+      <div style="display:flex;gap:8px;">
+        <button onclick="navigator.clipboard.writeText(this.closest('div').previousElementSibling.previousElementSibling.previousElementSibling.value).then(()=>showToast('✓ Copied'));this.closest('[style*=fixed]').remove();" style="flex:1;padding:10px;background:#1A3A1A;border:1px solid #2A5A2A;border-radius:8px;color:#4ADE80;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>
+        <button onclick="this.closest('[style*=fixed]').remove();" style="padding:10px 16px;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:8px;color:#666;font-size:12px;cursor:pointer;">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+window.exportForCoach = exportForCoach;
+
 // ── Auth ──────────────────────────────────────────────────────────────────
 onAuthStateChanged(auth,async user=>{
   if(user){
