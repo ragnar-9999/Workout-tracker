@@ -658,31 +658,55 @@ async function exportForCoach() {
   // Copy to clipboard
   try {
     await navigator.clipboard.writeText(text);
-    showToast("✓ Copied to clipboard — paste in Claude");
+    showToast("✓ Copied — paste into Claude with your check-in numbers");
   } catch(e) {
-    // Fallback: show in modal
-    window._exportText = text;
     showExportModal(text);
   }
 }
 
-function showExportModal(text) {
-  const modal = document.createElement('div');
-  modal.style.cssText = "position:fixed;inset:0;background:#000000CC;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
-  modal.innerHTML = `
-    <div style="background:#111;border:1px solid #2A2A2A;border-radius:12px;padding:20px;width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;gap:12px;">
-      <div style="font-size:14px;font-weight:700;color:#F0F0F0;">Export for Coach</div>
-      <div style="font-size:11px;color:#555;">Select all and copy, then paste into Claude</div>
-      <textarea readonly style="background:#0A0A0A;border:1px solid #1E1E1E;border-radius:8px;color:#AAA;font-size:11px;padding:12px;flex:1;min-height:200px;resize:none;font-family:monospace;line-height:1.5;">${text}</textarea>
-      <div style="display:flex;gap:8px;">
-        <button onclick="navigator.clipboard.writeText(this.closest('div').previousElementSibling.previousElementSibling.previousElementSibling.value).then(()=>showToast('✓ Copied'));this.closest('[style*=fixed]').remove();" style="flex:1;padding:10px;background:#1A3A1A;border:1px solid #2A5A2A;border-radius:8px;color:#4ADE80;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>
-        <button onclick="this.closest('[style*=fixed]').remove();" style="padding:10px 16px;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:8px;color:#666;font-size:12px;cursor:pointer;">Close</button>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-}
 
 window.exportForCoach = exportForCoach;
+
+function showExportModal(text) {
+  window._coachExport = text;
+  const modal = document.createElement('div');
+  modal.id = 'exportModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  const card = document.createElement('div');
+  card.style.cssText = 'background:#111;border:1px solid #2A2A2A;border-radius:12px;padding:20px;width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;gap:12px;';
+  card.innerHTML = '<div style="font-size:14px;font-weight:700;color:#F0F0F0;">Export for Coach</div><div style="font-size:11px;color:#555;">Tap Copy then paste into Claude with your check-in numbers</div>';
+  const ta = document.createElement('textarea');
+  ta.id = 'coachExportTA';
+  ta.readOnly = true;
+  ta.value = text;
+  ta.style.cssText = 'background:#0A0A0A;border:1px solid #1E1E1E;border-radius:8px;color:#AAA;font-size:11px;padding:12px;flex:1;min-height:200px;resize:none;font-family:monospace;line-height:1.5;width:100%;';
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;';
+  const copyBtn = document.createElement('button');
+  copyBtn.textContent = '📋 Copy';
+  copyBtn.style.cssText = 'flex:1;padding:10px;background:#1A3A1A;border:1px solid #2A5A2A;border-radius:8px;color:#4ADE80;font-size:12px;font-weight:600;cursor:pointer;';
+  copyBtn.onclick = async function() {
+    const t = window._coachExport;
+    try {
+      await navigator.clipboard.writeText(t);
+    } catch(e) {
+      ta.select();
+      document.execCommand('copy');
+    }
+    showToast('✓ Copied — paste into Claude');
+    document.getElementById('exportModal')?.remove();
+  };
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Close';
+  closeBtn.style.cssText = 'padding:10px 16px;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:8px;color:#666;font-size:12px;cursor:pointer;';
+  closeBtn.onclick = function() { document.getElementById('exportModal')?.remove(); };
+  btnRow.appendChild(copyBtn);
+  btnRow.appendChild(closeBtn);
+  card.appendChild(ta);
+  card.appendChild(btnRow);
+  modal.appendChild(card);
+  document.body.appendChild(modal);
+}
 
 // ── Auth ──────────────────────────────────────────────────────────────────
 onAuthStateChanged(auth,async user=>{
