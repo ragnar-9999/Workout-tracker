@@ -264,11 +264,12 @@ async function saveEx(exName){
   const day=PLAN[activeDay];
   saveStatus[exName]='spin';render();
   const el=logs[exName]||{};
-  const vals=Object.values(el).filter(v=>typeof v==='object'&&v.w);
-  const ws=vals.map(s=>parseFloat(s.w)).filter(w=>!isNaN(w)&&w>0);
+  const vals=Object.values(el).filter(v=>typeof v==='object');
+  const getW2=s=>parseFloat(s.w||s.weight||0);
+  const ws=vals.map(getW2).filter(w=>!isNaN(w)&&w>0);
   const maxW=ws.length>0?Math.max(...ws):null;
   let bestR=0;
-  if(maxW)for(const s of vals){if(parseFloat(s.w)===maxW){const r=parseInt(s.r)||0;if(r>bestR)bestR=r;}}
+  if(maxW)for(const s of vals){if((parseFloat(s.w||s.weight||0))===maxW){const r=parseInt(s.r||s.reps)||0;if(r>bestR)bestR=r;}}
   try{
     const sRef=doc(db,upath(`sessions/${weekKey}_${activeDay}`));
     const sSnap=await getDoc(sRef);
@@ -328,9 +329,12 @@ async function exportCoach(){
       lines.push('');lines.push(`── ${dayName.toUpperCase()} (${day.focus}) ──`);
       for(const ex of day.exercises){
         const es=sets[ex.n];if(!es)continue;
-        const vals=Object.values(es).filter(v=>typeof v==='object'&&v.w);
-        const ws=vals.map(s=>parseFloat(s.w)).filter(w=>!isNaN(w)&&w>0);
-        const rs=vals.map(s=>parseInt(s.r)).filter(r=>!isNaN(r)&&r>0);
+        const vals=Object.values(es).filter(v=>typeof v==='object');
+        // Handle both old format {weight,reps} and new format {w,r}
+        const getW=s=>parseFloat(s.w||s.weight||0);
+        const getR=s=>parseInt(s.r||s.reps||0);
+        const ws=vals.map(getW).filter(w=>!isNaN(w)&&w>0);
+        const rs=vals.map(getR).filter(r=>!isNaN(r)&&r>0);
         if(!ws.length)continue;
         const maxW=Math.max(...ws);
         const avgR=rs.length?Math.round(rs.reduce((a,b)=>a+b)/rs.length):'?';
