@@ -91,7 +91,6 @@ const PLAN={
     {n:'Wide-Grip Row',s:3,t:10,note:'Upper back and rhomboids.'},
     {n:'Lat Prayers',s:3,t:12,note:'Pure lat isolation. Slow and controlled.'},
     {n:'Rear Delt Fly',s:3,t:15,note:'Light. Focus on rear delt contraction only.'},
-    {n:'Face Pull',s:3,t:15,note:'Rotator cuff health. Never skip.'},
     {n:'Overhead Triceps Extension',s:3,t:10,note:'Cable. Long head stretch. ~50 kg range.'},
     {n:'Rope Pushdown',s:3,t:12,note:'Single handed. Lateral head. ~20 kg.'},
     {n:'Cable Crunches',s:3,t:15,note:'Kneel at cable. Full spinal flexion. Upper abs.',bw:true},
@@ -125,39 +124,67 @@ const PLAN={
 };
 const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
+// ── Progression increments per exercise ───────────────────────────────────
+const INCREMENT={
+  'Incline Smith Machine Press':2.5,
+  'Flat Machine Press':2.5,
+  'Shoulder Press':2.5,
+  'Barbell RDL':2.5,
+  'Leg Press':5,
+  'Cable Fly High→Low':1,
+  'Cable Fly Low→High':1,
+  'Cable Lateral Raise':1,
+  'DB Lateral Raise':1,
+  'Cable Curl (Straight Bar)':1,
+  'Bayesian Curl':1,
+  'Hammer Curl':1,
+  'Lat Pulldown':2,
+  'Triangle Cable Row':2,
+  'Wide-Grip Row':2,
+  'Lat Prayers':2,
+  'Rear Delt Fly':1,
+  'Overhead Triceps Extension':2,
+  'Rope Pushdown':1,
+  'Hamstring Curl':2,
+  'Back Extension':2,
+  'Hip Adduction':2,
+  'Hip Abduction':2,
+  'Calf Raises':2,
+};
+
 // ── GLOBAL best — keyed by exercise NAME only (not day) ───────────────────
 // This means Incline Smith on Mon and Fri share the same best
 const BEST_SEED={
-  // Corrected realistic bests — cross-day, based on actual logged working weights
-  'Incline Smith Machine Press':{w:25,r:10},  // Best across Mon+Fri
+  'Incline Smith Machine Press':{w:25,r:10},
   'Flat Machine Press':{w:59,r:12},
-  'Cable Fly High→Low':{w:23,r:12},   // Corrected: was 41kg single-hand, now both hands
-  'Cable Fly Low→High':{w:23,r:12},   // Same
+  'Cable Fly High→Low':{w:23,r:12},
+  'Cable Fly Low→High':{w:23,r:12},
   'Cable Lateral Raise':{w:23,r:15},
-  'Cable Curl (Straight Bar)':{w:58,r:12},  // Updated from this week
-  'Bayesian Curl':{w:29,r:12},        // Corrected: 41kg not realistic, working weight 23-29kg
-  'Hammer Curl':{w:61,r:12},          // Best from Upper day history
-  'Lat Pulldown':{w:75,r:8},          // Updated from this week PR
-  'Triangle Cable Row':{w:66,r:10},
-  'Wide-Grip Row':{w:52,r:10},        // Updated from this week PR
+  'Cable Curl (Straight Bar)':{w:58,r:12},
+  'Bayesian Curl':{w:29,r:12},
+  'Hammer Curl':{w:61,r:12},
+  'Lat Pulldown':{w:75,r:8},
+  'Triangle Cable Row':{w:68,r:9},
+  'Wide-Grip Row':{w:52,r:12},
   'Lat Prayers':{w:68,r:12},
   'Rear Delt Fly':{w:32,r:15},
-  'Face Pull':{w:75,r:15},
   'Overhead Triceps Extension':{w:54,r:12},
   'Rope Pushdown':{w:27,r:12},
-  'Barbell RDL':{w:80,r:5},                // Updated from this week PR
+  'Barbell RDL':{w:100,r:5},
   'Leg Press':{w:250,r:10},
   'Hamstring Curl':{w:73,r:12},
-  'Back Extension':{w:25,r:10},       // Updated from this week
+  'Back Extension':{w:25,r:10},
   'Hip Adduction':{w:79,r:15},
   'Hip Abduction':{w:95,r:15},
   'Calf Raises':{w:138,r:15},
-  'Shoulder Press':{w:41,r:9},        // Updated from this week PR
-  'DB Lateral Raise':{w:16,r:15},     // Updated from this week
+  'Shoulder Press':{w:41,r:9},
+  'DB Lateral Raise':{w:16,r:15},
+  'Hanging Leg Raises':{w:0,r:12},
+  'Cable Crunches':{w:0,r:15},
 };
 
 // ── Seed history — keyed by day sheet for Firebase, but last/best global ──
-const SEED_H={"Push":{"Incline Smith Machine Press":[{"date":"27/04/2026","weight":23,"reps":10},{"date":"04/05/2026","weight":23,"reps":10},{"date":"11/05/2026","weight":23,"reps":10},{"date":"18/05/2026","weight":23,"reps":10},{"date":"25/05/2026","weight":23,"reps":10},{"date":"01/06/2026","weight":23,"reps":10},{"date":"08/06/2026","weight":23,"reps":10},{"date":"15/06/2026","weight":23,"reps":10},{"date":"22/06/2026","weight":22,"reps":10}],"Flat Machine Press":[{"date":"20/04/2026","weight":59,"reps":12},{"date":"27/04/2026","weight":59,"reps":12},{"date":"04/05/2026","weight":52,"reps":12},{"date":"11/05/2026","weight":52,"reps":12},{"date":"18/05/2026","weight":52,"reps":12},{"date":"01/06/2026","weight":52,"reps":12},{"date":"08/06/2026","weight":52,"reps":12},{"date":"15/06/2026","weight":52,"reps":12},{"date":"22/06/2026","weight":59,"reps":12}],"Cable Fly High→Low":[{"date":"01/06/2026","weight":23,"reps":12},{"date":"08/06/2026","weight":23,"reps":12},{"date":"15/06/2026","weight":23,"reps":12},{"date":"22/06/2026","weight":23,"reps":12}],"Cable Fly Low→High":[{"date":"01/06/2026","weight":23,"reps":12},{"date":"08/06/2026","weight":23,"reps":12},{"date":"15/06/2026","weight":23,"reps":12},{"date":"22/06/2026","weight":23,"reps":12}],"Cable Lateral Raise":[{"date":"02/02/2026","weight":18,"reps":15},{"date":"09/02/2026","weight":18,"reps":15},{"date":"03/03/2026","weight":20,"reps":15},{"date":"23/03/2026","weight":23,"reps":15},{"date":"30/03/2026","weight":23,"reps":15}],"Cable Curl (Straight Bar)":[{"date":"13/04/2026","weight":47,"reps":12},{"date":"20/04/2026","weight":50,"reps":12},{"date":"27/04/2026","weight":52,"reps":12},{"date":"11/05/2026","weight":52,"reps":12},{"date":"01/06/2026","weight":54,"reps":12},{"date":"08/06/2026","weight":54,"reps":12},{"date":"15/06/2026","weight":56,"reps":12},{"date":"22/06/2026","weight":56,"reps":12}],"Bayesian Curl":[{"date":"30/03/2026","weight":27,"reps":12},{"date":"06/04/2026","weight":27,"reps":12},{"date":"13/04/2026","weight":29,"reps":12},{"date":"20/04/2026","weight":29,"reps":12},{"date":"04/05/2026","weight":23,"reps":12},{"date":"11/05/2026","weight":23,"reps":12},{"date":"01/06/2026","weight":27,"reps":12},{"date":"22/06/2026","weight":23,"reps":12}],"Hammer Curl":[{"date":"19/05/2026","weight":54,"reps":12},{"date":"26/05/2026","weight":54,"reps":12},{"date":"22/06/2026","weight":56,"reps":12}]},"Pull":{"Lat Pulldown":[{"date":"28/04/2026","weight":72,"reps":12},{"date":"05/05/2026","weight":72,"reps":12},{"date":"12/05/2026","weight":72,"reps":12},{"date":"19/05/2026","weight":73,"reps":12},{"date":"26/05/2026","weight":73,"reps":12},{"date":"02/06/2026","weight":73,"reps":12},{"date":"09/06/2026","weight":73,"reps":12},{"date":"16/06/2026","weight":73,"reps":12}],"Triangle Cable Row":[{"date":"21/04/2026","weight":61,"reps":10},{"date":"28/04/2026","weight":64,"reps":10},{"date":"05/05/2026","weight":64,"reps":10},{"date":"12/05/2026","weight":64,"reps":10},{"date":"02/06/2026","weight":66,"reps":10},{"date":"09/06/2026","weight":66,"reps":10},{"date":"16/06/2026","weight":66,"reps":10}],"Wide-Grip Row":[{"date":"28/04/2026","weight":28,"reps":10},{"date":"05/05/2026","weight":26,"reps":10},{"date":"12/05/2026","weight":28,"reps":10},{"date":"19/05/2026","weight":28,"reps":10},{"date":"02/06/2026","weight":28,"reps":10},{"date":"09/06/2026","weight":28,"reps":10},{"date":"16/06/2026","weight":28,"reps":10}],"Lat Prayers":[{"date":"07/04/2026","weight":68,"reps":12},{"date":"14/04/2026","weight":68,"reps":12},{"date":"28/04/2026","weight":68,"reps":12},{"date":"05/05/2026","weight":68,"reps":12},{"date":"12/05/2026","weight":68,"reps":12},{"date":"19/05/2026","weight":64,"reps":12},{"date":"26/05/2026","weight":64,"reps":12}],"Rear Delt Fly":[{"date":"07/04/2026","weight":29,"reps":15},{"date":"14/04/2026","weight":27,"reps":15},{"date":"28/04/2026","weight":32,"reps":15},{"date":"05/05/2026","weight":32,"reps":15},{"date":"12/05/2026","weight":32,"reps":15},{"date":"19/05/2026","weight":32,"reps":15},{"date":"26/05/2026","weight":32,"reps":15}],"Face Pull":[{"date":"26/12/2025","weight":75,"reps":15},{"date":"02/01/2026","weight":75,"reps":15},{"date":"09/01/2026","weight":75,"reps":15},{"date":"16/01/2026","weight":75,"reps":15},{"date":"06/02/2026","weight":75,"reps":15},{"date":"13/02/2026","weight":75,"reps":15}],"Overhead Triceps Extension":[{"date":"31/03/2026","weight":52,"reps":12},{"date":"07/04/2026","weight":52,"reps":12},{"date":"14/04/2026","weight":52,"reps":12},{"date":"28/04/2026","weight":54,"reps":12},{"date":"05/05/2026","weight":54,"reps":12},{"date":"19/05/2026","weight":50,"reps":12},{"date":"16/06/2026","weight":52,"reps":12}],"Rope Pushdown":[{"date":"14/04/2026","weight":20,"reps":12},{"date":"21/04/2026","weight":20,"reps":12},{"date":"28/04/2026","weight":20,"reps":12},{"date":"05/05/2026","weight":20,"reps":12},{"date":"19/05/2026","weight":20,"reps":12},{"date":"26/05/2026","weight":20,"reps":12},{"date":"16/06/2026","weight":20,"reps":12}]},"Legs":{"Barbell RDL":[{"date":"02/04/2026","weight":36,"reps":10},{"date":"09/04/2026","weight":36,"reps":10},{"date":"23/04/2026","weight":36,"reps":10},{"date":"30/04/2026","weight":36,"reps":10},{"date":"07/05/2026","weight":36,"reps":10},{"date":"14/05/2026","weight":36,"reps":10},{"date":"21/05/2026","weight":36,"reps":10},{"date":"28/05/2026","weight":36,"reps":10}],"Leg Press":[{"date":"02/04/2026","weight":240,"reps":10},{"date":"09/04/2026","weight":245,"reps":10},{"date":"23/04/2026","weight":245,"reps":10},{"date":"30/04/2026","weight":247,"reps":10},{"date":"07/05/2026","weight":247,"reps":10},{"date":"14/05/2026","weight":247,"reps":10},{"date":"21/05/2026","weight":247,"reps":10},{"date":"28/05/2026","weight":250,"reps":10}],"Hamstring Curl":[{"date":"26/03/2026","weight":63.6,"reps":12},{"date":"02/04/2026","weight":63.3,"reps":12},{"date":"09/04/2026","weight":63.3,"reps":12},{"date":"23/04/2026","weight":66,"reps":12},{"date":"30/04/2026","weight":66,"reps":12},{"date":"07/05/2026","weight":66,"reps":12},{"date":"14/05/2026","weight":66,"reps":12},{"date":"21/05/2026","weight":66,"reps":12}],"Back Extension":[{"date":"30/08/2025","weight":20,"reps":12}],"Hip Adduction":[{"date":"12/03/2026","weight":75,"reps":15},{"date":"19/03/2026","weight":75,"reps":15},{"date":"26/03/2026","weight":75,"reps":15},{"date":"02/04/2026","weight":75,"reps":15},{"date":"09/04/2026","weight":77,"reps":15},{"date":"07/05/2026","weight":79,"reps":15},{"date":"14/05/2026","weight":79,"reps":15},{"date":"21/05/2026","weight":79,"reps":15}],"Hip Abduction":[{"date":"24/08/2025","weight":81,"reps":15},{"date":"06/09/2025","weight":93,"reps":15},{"date":"09/10/2025","weight":95,"reps":15},{"date":"16/10/2025","weight":95,"reps":15},{"date":"23/10/2025","weight":95,"reps":15}],"Calf Raises":[{"date":"07/03/2026","weight":129,"reps":15},{"date":"12/03/2026","weight":131,"reps":15},{"date":"19/03/2026","weight":131,"reps":15},{"date":"26/03/2026","weight":134,"reps":15},{"date":"02/04/2026","weight":134,"reps":15},{"date":"09/04/2026","weight":136,"reps":15},{"date":"14/05/2026","weight":136,"reps":15},{"date":"21/05/2026","weight":138,"reps":15}]},"Upper":{"Shoulder Press":[{"date":"05/12/2025","weight":18,"reps":10},{"date":"11/12/2025","weight":20,"reps":10},{"date":"19/12/2025","weight":20,"reps":10},{"date":"26/12/2025","weight":18,"reps":10},{"date":"09/01/2026","weight":18,"reps":10},{"date":"16/01/2026","weight":18,"reps":10},{"date":"23/01/2026","weight":18,"reps":10}],"Incline Smith Machine Press":[{"date":"27/03/2026","weight":26,"reps":10},{"date":"03/04/2026","weight":26,"reps":10},{"date":"10/04/2026","weight":26,"reps":10},{"date":"17/04/2026","weight":26,"reps":10},{"date":"08/05/2026","weight":20,"reps":10},{"date":"16/05/2026","weight":25,"reps":10},{"date":"23/05/2026","weight":25,"reps":10}],"Lat Pulldown":[{"date":"27/03/2026","weight":70,"reps":12},{"date":"03/04/2026","weight":68,"reps":12},{"date":"10/04/2026","weight":70,"reps":12},{"date":"17/04/2026","weight":72,"reps":12},{"date":"24/04/2026","weight":72,"reps":12},{"date":"08/05/2026","weight":73,"reps":12},{"date":"16/05/2026","weight":73,"reps":12},{"date":"23/05/2026","weight":73,"reps":12}],"Wide-Grip Row":[{"date":"16/01/2026","weight":26,"reps":10},{"date":"23/01/2026","weight":26,"reps":10},{"date":"06/02/2026","weight":26,"reps":10},{"date":"13/02/2026","weight":23,"reps":10},{"date":"20/02/2026","weight":26,"reps":10},{"date":"14/03/2026","weight":26,"reps":10},{"date":"03/04/2026","weight":28,"reps":10}],"Cable Fly High→Low":[{"date":"17/04/2026","weight":41,"reps":12},{"date":"24/04/2026","weight":41,"reps":12},{"date":"08/05/2026","weight":41,"reps":12},{"date":"16/05/2026","weight":41,"reps":12},{"date":"23/05/2026","weight":41,"reps":12}],"Cable Fly Low→High":[{"date":"17/04/2026","weight":41,"reps":12},{"date":"24/04/2026","weight":41,"reps":12},{"date":"08/05/2026","weight":41,"reps":12},{"date":"16/05/2026","weight":41,"reps":12},{"date":"23/05/2026","weight":41,"reps":12}],"DB Lateral Raise":[{"date":"23/01/2026","weight":18,"reps":15},{"date":"06/02/2026","weight":20,"reps":15},{"date":"14/03/2026","weight":23,"reps":15},{"date":"10/04/2026","weight":25,"reps":15},{"date":"24/04/2026","weight":10,"reps":15}],"Rear Delt Fly":[{"date":"06/02/2026","weight":23,"reps":15},{"date":"14/03/2026","weight":25,"reps":15},{"date":"20/03/2026","weight":27,"reps":15},{"date":"10/04/2026","weight":27,"reps":15},{"date":"17/04/2026","weight":32,"reps":15},{"date":"24/04/2026","weight":32,"reps":15}],"Cable Curl (Straight Bar)":[{"date":"27/03/2026","weight":32,"reps":12},{"date":"03/04/2026","weight":45,"reps":12},{"date":"10/04/2026","weight":47,"reps":12},{"date":"17/04/2026","weight":50,"reps":12},{"date":"24/04/2026","weight":52,"reps":12},{"date":"08/05/2026","weight":52,"reps":12},{"date":"16/05/2026","weight":52,"reps":12},{"date":"23/05/2026","weight":54,"reps":12}],"Hammer Curl":[{"date":"10/04/2026","weight":59,"reps":12},{"date":"17/04/2026","weight":59,"reps":12},{"date":"24/04/2026","weight":61,"reps":12},{"date":"08/05/2026","weight":61,"reps":12},{"date":"23/05/2026","weight":54,"reps":12}],"Rope Pushdown":[{"date":"20/03/2026","weight":23,"reps":12},{"date":"27/03/2026","weight":23,"reps":12},{"date":"03/04/2026","weight":25,"reps":12},{"date":"10/04/2026","weight":25,"reps":12},{"date":"17/04/2026","weight":25,"reps":12},{"date":"24/04/2026","weight":27,"reps":12},{"date":"08/05/2026","weight":27,"reps":12},{"date":"23/05/2026","weight":27,"reps":12}]}};
+const SEED_H={"Push":{"Incline Smith Machine Press":[{"date":"27/04/2026","weight":23,"reps":10},{"date":"04/05/2026","weight":23,"reps":10},{"date":"11/05/2026","weight":23,"reps":10},{"date":"18/05/2026","weight":23,"reps":10},{"date":"25/05/2026","weight":23,"reps":10},{"date":"01/06/2026","weight":23,"reps":10},{"date":"08/06/2026","weight":23,"reps":10},{"date":"15/06/2026","weight":23,"reps":10},{"date":"22/06/2026","weight":22,"reps":10}],"Flat Machine Press":[{"date":"20/04/2026","weight":59,"reps":12},{"date":"27/04/2026","weight":59,"reps":12},{"date":"04/05/2026","weight":52,"reps":12},{"date":"11/05/2026","weight":52,"reps":12},{"date":"18/05/2026","weight":52,"reps":12},{"date":"01/06/2026","weight":52,"reps":12},{"date":"08/06/2026","weight":52,"reps":12},{"date":"15/06/2026","weight":52,"reps":12},{"date":"22/06/2026","weight":59,"reps":12}],"Cable Fly High→Low":[{"date":"01/06/2026","weight":23,"reps":12},{"date":"08/06/2026","weight":23,"reps":12},{"date":"15/06/2026","weight":23,"reps":12},{"date":"22/06/2026","weight":23,"reps":12}],"Cable Fly Low→High":[{"date":"01/06/2026","weight":23,"reps":12},{"date":"08/06/2026","weight":23,"reps":12},{"date":"15/06/2026","weight":23,"reps":12},{"date":"22/06/2026","weight":23,"reps":12}],"Cable Lateral Raise":[{"date":"02/02/2026","weight":18,"reps":15},{"date":"09/02/2026","weight":18,"reps":15},{"date":"03/03/2026","weight":20,"reps":15},{"date":"23/03/2026","weight":23,"reps":15},{"date":"30/03/2026","weight":23,"reps":15}],"Cable Curl (Straight Bar)":[{"date":"13/04/2026","weight":47,"reps":12},{"date":"20/04/2026","weight":50,"reps":12},{"date":"27/04/2026","weight":52,"reps":12},{"date":"11/05/2026","weight":52,"reps":12},{"date":"01/06/2026","weight":54,"reps":12},{"date":"08/06/2026","weight":54,"reps":12},{"date":"15/06/2026","weight":56,"reps":12},{"date":"22/06/2026","weight":56,"reps":12}],"Bayesian Curl":[{"date":"30/03/2026","weight":27,"reps":12},{"date":"06/04/2026","weight":27,"reps":12},{"date":"13/04/2026","weight":29,"reps":12},{"date":"20/04/2026","weight":29,"reps":12},{"date":"04/05/2026","weight":23,"reps":12},{"date":"11/05/2026","weight":23,"reps":12},{"date":"01/06/2026","weight":27,"reps":12},{"date":"22/06/2026","weight":23,"reps":12}],"Hammer Curl":[{"date":"19/05/2026","weight":54,"reps":12},{"date":"26/05/2026","weight":54,"reps":12},{"date":"22/06/2026","weight":56,"reps":12}]},"Pull":{"Lat Pulldown":[{"date":"28/04/2026","weight":72,"reps":12},{"date":"05/05/2026","weight":72,"reps":12},{"date":"12/05/2026","weight":72,"reps":12},{"date":"19/05/2026","weight":73,"reps":12},{"date":"26/05/2026","weight":73,"reps":12},{"date":"02/06/2026","weight":73,"reps":12},{"date":"09/06/2026","weight":73,"reps":12},{"date":"16/06/2026","weight":73,"reps":12}],"Triangle Cable Row":[{"date":"21/04/2026","weight":61,"reps":10},{"date":"28/04/2026","weight":64,"reps":10},{"date":"05/05/2026","weight":64,"reps":10},{"date":"12/05/2026","weight":64,"reps":10},{"date":"02/06/2026","weight":66,"reps":10},{"date":"09/06/2026","weight":66,"reps":10},{"date":"16/06/2026","weight":66,"reps":10}],"Wide-Grip Row":[{"date":"28/04/2026","weight":28,"reps":10},{"date":"05/05/2026","weight":26,"reps":10},{"date":"12/05/2026","weight":28,"reps":10},{"date":"19/05/2026","weight":28,"reps":10},{"date":"02/06/2026","weight":28,"reps":10},{"date":"09/06/2026","weight":28,"reps":10},{"date":"16/06/2026","weight":28,"reps":10}],"Lat Prayers":[{"date":"07/04/2026","weight":68,"reps":12},{"date":"14/04/2026","weight":68,"reps":12},{"date":"28/04/2026","weight":68,"reps":12},{"date":"05/05/2026","weight":68,"reps":12},{"date":"12/05/2026","weight":68,"reps":12},{"date":"19/05/2026","weight":64,"reps":12},{"date":"26/05/2026","weight":64,"reps":12}],"Rear Delt Fly":[{"date":"07/04/2026","weight":29,"reps":15},{"date":"14/04/2026","weight":27,"reps":15},{"date":"28/04/2026","weight":32,"reps":15},{"date":"05/05/2026","weight":32,"reps":15},{"date":"12/05/2026","weight":32,"reps":15},{"date":"19/05/2026","weight":32,"reps":15},{"date":"26/05/2026","weight":32,"reps":15}],"Overhead Triceps Extension":[{"date":"31/03/2026","weight":52,"reps":12},{"date":"07/04/2026","weight":52,"reps":12},{"date":"14/04/2026","weight":52,"reps":12},{"date":"28/04/2026","weight":54,"reps":12},{"date":"05/05/2026","weight":54,"reps":12},{"date":"19/05/2026","weight":50,"reps":12},{"date":"16/06/2026","weight":52,"reps":12}],"Rope Pushdown":[{"date":"14/04/2026","weight":20,"reps":12},{"date":"21/04/2026","weight":20,"reps":12},{"date":"28/04/2026","weight":20,"reps":12},{"date":"05/05/2026","weight":20,"reps":12},{"date":"19/05/2026","weight":20,"reps":12},{"date":"26/05/2026","weight":20,"reps":12},{"date":"16/06/2026","weight":20,"reps":12}]},"Legs":{"Barbell RDL":[{"date":"02/04/2026","weight":36,"reps":10},{"date":"09/04/2026","weight":36,"reps":10},{"date":"23/04/2026","weight":36,"reps":10},{"date":"30/04/2026","weight":36,"reps":10},{"date":"07/05/2026","weight":36,"reps":10},{"date":"14/05/2026","weight":36,"reps":10},{"date":"21/05/2026","weight":36,"reps":10},{"date":"28/05/2026","weight":36,"reps":10}],"Leg Press":[{"date":"02/04/2026","weight":240,"reps":10},{"date":"09/04/2026","weight":245,"reps":10},{"date":"23/04/2026","weight":245,"reps":10},{"date":"30/04/2026","weight":247,"reps":10},{"date":"07/05/2026","weight":247,"reps":10},{"date":"14/05/2026","weight":247,"reps":10},{"date":"21/05/2026","weight":247,"reps":10},{"date":"28/05/2026","weight":250,"reps":10}],"Hamstring Curl":[{"date":"26/03/2026","weight":63.6,"reps":12},{"date":"02/04/2026","weight":63.3,"reps":12},{"date":"09/04/2026","weight":63.3,"reps":12},{"date":"23/04/2026","weight":66,"reps":12},{"date":"30/04/2026","weight":66,"reps":12},{"date":"07/05/2026","weight":66,"reps":12},{"date":"14/05/2026","weight":66,"reps":12},{"date":"21/05/2026","weight":66,"reps":12}],"Back Extension":[{"date":"30/08/2025","weight":20,"reps":12}],"Hip Adduction":[{"date":"12/03/2026","weight":75,"reps":15},{"date":"19/03/2026","weight":75,"reps":15},{"date":"26/03/2026","weight":75,"reps":15},{"date":"02/04/2026","weight":75,"reps":15},{"date":"09/04/2026","weight":77,"reps":15},{"date":"07/05/2026","weight":79,"reps":15},{"date":"14/05/2026","weight":79,"reps":15},{"date":"21/05/2026","weight":79,"reps":15}],"Hip Abduction":[{"date":"24/08/2025","weight":81,"reps":15},{"date":"06/09/2025","weight":93,"reps":15},{"date":"09/10/2025","weight":95,"reps":15},{"date":"16/10/2025","weight":95,"reps":15},{"date":"23/10/2025","weight":95,"reps":15}],"Calf Raises":[{"date":"07/03/2026","weight":129,"reps":15},{"date":"12/03/2026","weight":131,"reps":15},{"date":"19/03/2026","weight":131,"reps":15},{"date":"26/03/2026","weight":134,"reps":15},{"date":"02/04/2026","weight":134,"reps":15},{"date":"09/04/2026","weight":136,"reps":15},{"date":"14/05/2026","weight":136,"reps":15},{"date":"21/05/2026","weight":138,"reps":15}]},"Upper":{"Shoulder Press":[{"date":"05/12/2025","weight":18,"reps":10},{"date":"11/12/2025","weight":20,"reps":10},{"date":"19/12/2025","weight":20,"reps":10},{"date":"26/12/2025","weight":18,"reps":10},{"date":"09/01/2026","weight":18,"reps":10},{"date":"16/01/2026","weight":18,"reps":10},{"date":"23/01/2026","weight":18,"reps":10}],"Incline Smith Machine Press":[{"date":"27/03/2026","weight":26,"reps":10},{"date":"03/04/2026","weight":26,"reps":10},{"date":"10/04/2026","weight":26,"reps":10},{"date":"17/04/2026","weight":26,"reps":10},{"date":"08/05/2026","weight":20,"reps":10},{"date":"16/05/2026","weight":25,"reps":10},{"date":"23/05/2026","weight":25,"reps":10}],"Lat Pulldown":[{"date":"27/03/2026","weight":70,"reps":12},{"date":"03/04/2026","weight":68,"reps":12},{"date":"10/04/2026","weight":70,"reps":12},{"date":"17/04/2026","weight":72,"reps":12},{"date":"24/04/2026","weight":72,"reps":12},{"date":"08/05/2026","weight":73,"reps":12},{"date":"16/05/2026","weight":73,"reps":12},{"date":"23/05/2026","weight":73,"reps":12}],"Wide-Grip Row":[{"date":"16/01/2026","weight":26,"reps":10},{"date":"23/01/2026","weight":26,"reps":10},{"date":"06/02/2026","weight":26,"reps":10},{"date":"13/02/2026","weight":23,"reps":10},{"date":"20/02/2026","weight":26,"reps":10},{"date":"14/03/2026","weight":26,"reps":10},{"date":"03/04/2026","weight":28,"reps":10}],"Cable Fly High→Low":[{"date":"17/04/2026","weight":41,"reps":12},{"date":"24/04/2026","weight":41,"reps":12},{"date":"08/05/2026","weight":41,"reps":12},{"date":"16/05/2026","weight":41,"reps":12},{"date":"23/05/2026","weight":41,"reps":12}],"Cable Fly Low→High":[{"date":"17/04/2026","weight":41,"reps":12},{"date":"24/04/2026","weight":41,"reps":12},{"date":"08/05/2026","weight":41,"reps":12},{"date":"16/05/2026","weight":41,"reps":12},{"date":"23/05/2026","weight":41,"reps":12}],"DB Lateral Raise":[{"date":"23/01/2026","weight":18,"reps":15},{"date":"06/02/2026","weight":20,"reps":15},{"date":"14/03/2026","weight":23,"reps":15},{"date":"10/04/2026","weight":25,"reps":15},{"date":"24/04/2026","weight":10,"reps":15}],"Rear Delt Fly":[{"date":"06/02/2026","weight":23,"reps":15},{"date":"14/03/2026","weight":25,"reps":15},{"date":"20/03/2026","weight":27,"reps":15},{"date":"10/04/2026","weight":27,"reps":15},{"date":"17/04/2026","weight":32,"reps":15},{"date":"24/04/2026","weight":32,"reps":15}],"Cable Curl (Straight Bar)":[{"date":"27/03/2026","weight":32,"reps":12},{"date":"03/04/2026","weight":45,"reps":12},{"date":"10/04/2026","weight":47,"reps":12},{"date":"17/04/2026","weight":50,"reps":12},{"date":"24/04/2026","weight":52,"reps":12},{"date":"08/05/2026","weight":52,"reps":12},{"date":"16/05/2026","weight":52,"reps":12},{"date":"23/05/2026","weight":54,"reps":12}],"Hammer Curl":[{"date":"10/04/2026","weight":59,"reps":12},{"date":"17/04/2026","weight":59,"reps":12},{"date":"24/04/2026","weight":61,"reps":12},{"date":"08/05/2026","weight":61,"reps":12},{"date":"23/05/2026","weight":54,"reps":12}],"Rope Pushdown":[{"date":"20/03/2026","weight":23,"reps":12},{"date":"27/03/2026","weight":23,"reps":12},{"date":"03/04/2026","weight":25,"reps":12},{"date":"10/04/2026","weight":25,"reps":12},{"date":"17/04/2026","weight":25,"reps":12},{"date":"24/04/2026","weight":27,"reps":12},{"date":"08/05/2026","weight":27,"reps":12},{"date":"23/05/2026","weight":27,"reps":12}]}};
 
 // ── State ─────────────────────────────────────────────────────────────────
 let activeDay=(()=>{const d=new Date().getDay();return DAYS[d===0?6:d-1];})();
@@ -227,6 +254,22 @@ function getGlobalBest(n){
 function getGlobalLast(n){
   const g=globalCache[n]||[];
   return g.length>0?g[g.length-1]:null;
+}
+
+// ── Target weight for next session ───────────────────────────────────────
+// Logic: if last session hit target reps on all sets → suggest weight + increment
+// Otherwise → suggest same weight (consolidate reps first)
+function getTarget(exName, targetReps){
+  if(targetReps===0) return null; // Lat Pulldown uses protocol, no auto-target
+  const last=getGlobalLast(exName);
+  if(!last) return null;
+  const inc=INCREMENT[exName]||1;
+  // If last reps met or exceeded target → time to add weight
+  if((last.reps||0)>=targetReps){
+    return{w:last.weight+inc, ready:true};
+  }
+  // Same weight, get more reps first
+  return{w:last.weight, ready:false};
 }
 
 function getWeekBest(n){
@@ -459,6 +502,9 @@ function render(){
       }
       const bPill=(!bw&&best)?`<span style="font-size:9px;color:#555;margin-left:4px">│</span><span style="font-size:11px;color:#FFB800;font-weight:700;margin-left:4px">${best.w}kg×${best.r}</span><span style="font-size:9px;color:#2A2A2A;margin-left:2px">best</span>`:'';
       const doneBadge=isDone?`<span style="font-size:9px;color:#4ADE80;background:#0A1A0A;border:1px solid #163316;padding:2px 6px;border-radius:12px;font-weight:600;flex-shrink:0">✓</span>`:'';
+      // Target badge — only show if not already done this week
+      const target=(!bw&&!wb)?getTarget(ex.n,ex.t):null;
+      const targetBadge=target?`<span style="font-size:9px;color:${target.ready?'#60A5FA':'#888'};background:${target.ready?'#0A0F1A':'#111'};border:1px solid ${target.ready?'#1A2A4A':'#222'};padding:2px 6px;border-radius:12px;font-weight:600;flex-shrink:0">${target.ready?'→':'='}${target.w}kg</span>`:'';
       const globalH=globalCache[ex.n]||[];const sp=(!bw&&globalH.length>1)?spark(globalH,day.color):'';
 
       let body='';
@@ -480,7 +526,8 @@ function render(){
         }
 
         // Sets — weight input gets color feedback, reps auto-filled with target
-        const phW=globalLast?`${globalLast.weight}`:isSmith?'kg/side':'kg';
+        const target2=(!bw)?getTarget(ex.n,ex.t):null;
+        const phW=target2?`aim ${target2.w}kg`:(globalLast?`${globalLast.weight}`:isSmith?'kg/side':'kg');
         const phR=ex.t>0?`${ex.t}`:'reps';
         const colT=bw?'20px 1fr':'20px 1fr 1fr';
         const hdr=bw
@@ -534,7 +581,7 @@ function render(){
             <div style="font-size:13px;font-weight:600;margin-bottom:2px;${isDone?'color:#555':''}">${ex.n}</div>
             <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
               <span style="font-size:10px;color:${isDone?'#4ADE80':day.color};background:${isDone?'#0A1A0A':day.color+'18'};padding:1px 7px;border-radius:12px;font-weight:600">${repLabel}</span>
-              ${wPill}${bPill}${doneBadge}
+              ${wPill}${bPill}${doneBadge}${targetBadge}
             </div>
           </div>
           ${sp}
