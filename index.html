@@ -591,11 +591,9 @@ function render(){
         </div>`;
       }
 
-      return`<div class="card${isDone?' done':''}" id="excard_${i}" draggable="true"
-          ondragstart="dragStart(${i})" ondragover="dragOver(event,${i})"
-          ondrop="dragDrop(${i})" ondragend="dragEnd()" ondragleave="dragLeave(${i})">
+      return`<div class="card${isDone?' done':''}" id="excard_${i}">
         <div class="ch" style="padding-left:4px">
-          <span class="drag-handle" title="Drag to reorder">⠿</span>
+          <span class="drag-handle" id="dh_${i}" ontouchstart="touchDragStart(event,${i})" ontouchend="touchDragEnd(event)" title="Hold to drag">⠿</span>
           <div style="flex:1;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="tog(${i})">
           <div style="width:20px;height:20px;border-radius:5px;background:${isDone?'#163316':day.color+'18'};border:1px solid ${isDone?'#1A4A1A':day.color+'33'};display:flex;align-items:center;justify-content:center;font-size:9px;color:${isDone?'#4ADE80':day.color};font-weight:700;flex-shrink:0">${isDone?'✓':i+1}</div>
           <div style="flex:1;min-width:0">
@@ -648,28 +646,81 @@ function render(){
 }
 
 // ── Handlers ──────────────────────────────────────────────────────────────
-window.dragStart=function(i){dragSrc=i;setTimeout(()=>{const el=document.getElementById('excard_'+i);if(el)el.classList.add('dragging');},0);};
-window.dragOver=function(e,i){e.preventDefault();const el=document.getElementById('excard_'+i);if(el&&i!==dragSrc)el.classList.add('drag-over');};
-window.dragLeave=function(i){const el=document.getElementById('excard_'+i);if(el)el.classList.remove('drag-over');};
-window.dragDrop=function(i){
-  if(dragSrc===null||dragSrc===i)return;
-  const order=getOrder(activeDay);
-  const newOrder=[...order];
-  const [moved]=newOrder.splice(dragSrc,1);
-  newOrder.splice(i,0,moved);
-  exerciseOrder[activeDay]=newOrder;
-  // Update openEx to follow the moved card
-  if(openEx===dragSrc)openEx=i;
-  else if(openEx!==null){
-    const order2=getOrder(activeDay);
-    openEx=order2.indexOf(order[openEx]);
-  }
-  dragSrc=null;
-  render();
+// Touch-based drag and drop (works on mobile)
+let touchDragIdx=null;
+let touchClone=null;
+let touchStartY=0;
+let touchCards=[];
+
+window.touchDragStart=function(e,i){
+  e.stopPropagation();
+  touchDragIdx=i;
+  touchStartY=e.touches[0].clientY;
+  dragSrc=i;
+
+  // Get all cards for position reference
+  touchCards=Array.from(document.querySelectorAll('.ex-card'));
+
+  // Create visual clone
+  const srcCard=document.getElementById('excard_'+i);
+  if(!srcCard)return;
+  touchClone=srcCard.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;left:${srcCard.getBoundingClientRect().left}px;top:${srcCard.getBoundingClientRect().top}px;width:${srcCard.offsetWidth}px;opacity:0.85;z-index:9999;pointer-events:none;background:#1A1A1A;border:1px solid #444;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.5);`;
+  document.body.appendChild(touchClone);
+  srcCard.style.opacity='0.3';
+
+  // Bind move and end
+  document.addEventListener('touchmove',touchDragMove,{passive:false});
+  document.addEventListener('touchend',touchDragEnd);
 };
-window.dragEnd=function(){
+
+function touchDragMove(e){
+  if(touchDragIdx===null)return;
+  e.preventDefault();
+  const y=e.touches[0].clientY;
+  if(touchClone) touchClone.style.top=(y-40)+'px';
+
+  // Highlight card underneath
+  touchCards.forEach((c,idx)=>{
+    const rect=c.getBoundingClientRect();
+    if(y>=rect.top&&y<=rect.bottom&&idx!==touchDragIdx){
+      c.classList.add('drag-over');
+    } else {
+      c.classList.remove('drag-over');
+    }
+  });
+}
+
+window.touchDragEnd=function(e){
+  document.removeEventListener('touchmove',touchDragMove);
+  document.removeEventListener('touchend',touchDragEnd);
+
+  if(touchClone){touchClone.remove();touchClone=null;}
+
+  const srcCard=document.getElementById('excard_'+touchDragIdx);
+  if(srcCard)srcCard.style.opacity='';
+
+  if(e&&e.changedTouches){
+    const y=e.changedTouches[0].clientY;
+    let targetIdx=null;
+    touchCards.forEach((c,idx)=>{
+      const rect=c.getBoundingClientRect();
+      if(y>=rect.top&&y<=rect.bottom&&idx!==touchDragIdx) targetIdx=idx;
+      c.classList.remove('drag-over');
+    });
+    if(targetIdx!==null&&targetIdx!==touchDragIdx){
+      const order=getOrder(activeDay);
+      const newOrder=[...order];
+      const[moved]=newOrder.splice(touchDragIdx,1);
+      newOrder.splice(targetIdx,0,moved);
+      exerciseOrder[activeDay]=newOrder;
+      if(openEx===touchDragIdx)openEx=targetIdx;
+      render();
+    }
+  }
+  touchDragIdx=null;
   dragSrc=null;
-  document.querySelectorAll('.ex-card').forEach(el=>{el.classList.remove('dragging','drag-over');});
+  touchCards=[];
 };
 window.sw=async function(d){activeDay=d;openEx=null;saveStatus={};logs={};done=new Set();render();await loadDay(d);};
 window.tog=function(i){openEx=openEx===i?null:i;render();};
