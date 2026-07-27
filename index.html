@@ -43,36 +43,29 @@ input,button,textarea{font-family:inherit;}input{outline:none;}
 .drag-handle{color:#252525;cursor:grab;padding:0 8px 0 2px;font-size:18px;flex-shrink:0;touch-action:none;user-select:none;-webkit-user-select:none;}
 .drag-handle:active{color:#555;}
 .card.drag-over{border-color:#555;background:#161616;}
-/* AI Panel */
-.ai-panel{background:#0C0C14;border:1px solid #1A1A2A;border-radius:12px;padding:16px;margin-bottom:14px;}
-.ai-panel.loading{opacity:0.7;}
-.ai-heading{font-size:10px;color:#4A4A7A;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-.ai-text{font-size:13px;color:#C0C0D8;line-height:1.65;}
-.ai-text strong{color:#E0E0FF;}
-.ai-text .good{color:#4ADE80;}
-.ai-text .warn{color:#FFB800;}
-.ai-text .bad{color:#F87171;}
-.ai-btn{padding:10px 16px;background:#0A0A1A;border:1px solid #1A1A3A;border-radius:8px;color:#6A7AEF;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;}
-.ai-btn:hover{background:#111128;border-color:#2A2A5A;}
-.ai-btn:disabled{opacity:0.4;pointer-events:none;}
-.ai-btn.full{width:100%;justify-content:center;margin-top:10px;padding:13px;}
-.pulse{animation:pulse 1.5s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:0;}
-.modal-sheet{background:#0F0F0F;border-radius:16px 16px 0 0;border:1px solid #1A1A1A;padding:20px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;}
-.modal-title{font-size:16px;font-weight:700;margin-bottom:4px;}
-.modal-sub{font-size:11px;color:#444;margin-bottom:16px;}
+/* History tab */
+.hist-week{margin-bottom:20px;}
+.hist-week-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.hist-cw{font-size:13px;font-weight:700;color:#F0F0F0;}
+.hist-copy{padding:5px 12px;background:#0A0A1A;border:1px solid #1A1A3A;border-radius:6px;color:#5A7AEF;font-size:11px;cursor:pointer;font-weight:600;}
+.hist-day-block{margin-bottom:10px;}
+.hist-day-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;padding:3px 8px;border-radius:4px;display:inline-block;}
+.hist-table{width:100%;border-collapse:collapse;}
+.hist-table th{font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;text-align:left;padding:4px 6px;border-bottom:1px solid #1A1A1A;}
+.hist-table td{font-size:11px;color:#888;padding:4px 6px;border-bottom:1px solid #0E0E0E;}
+.hist-table td.ex-name{color:#CCC;font-weight:500;}
+.hist-table td.pr{color:#4ADE80;}
+.hist-table td.down{color:#F87171;}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <div class="toast" id="toast"></div>
-
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-import{getFirestore,doc,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import{getFirestore,doc,setDoc,getDoc,collection,getDocs,query,orderBy}from"https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-const FB={apiKey:"AIzaSyAIXfdxKItrUVJI5m-PB_sK-73ucmWbm9I",authDomain:"ragnar9999workouttracker.firebaseapp.com",projectId:"ragnar9999workouttracker",storageBucket:"ragnar9999workouttracker.firebasestorage.app",messagingSenderId:"700941522087",appId:"1:700941522087:web:7d26765db39b798960b782"};
+const FB={apiKey:"AIzaSyAIXfdxKItrUVJI5m-PB_sK-73ucmWbm9I",authDomain:"ragnar9999workouttracker.firebaseapp.com",projectId:"ragnar9999workouttracker",storageBucket:"ragnar9999workouttracker.firebasestorage.app",messagingSenderId:"700981522087",appId:"1:700941522087:web:7d26765db39b798960b782"};
 const app=initializeApp(FB);
 const db=getFirestore(app);
 const auth=getAuth(app);
@@ -85,6 +78,7 @@ function parseDate(s){const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d);}
 function isThisWeek(s){const e=parseDate(s),m=new Date(weekKey),su=new Date(m);su.setDate(m.getDate()+6);return e>=m&&e<=su;}
 function toast(msg,err){const t=document.getElementById('toast');t.textContent=msg;t.className='toast on'+(err?' err':'');setTimeout(()=>t.className='toast',2500);}
 function upath(p){return`users/${user.uid}/${p}`;}
+function cwLabel(wk){const d=new Date(wk);const jan4=new Date(d.getFullYear(),0,4);const startOfWeek=new Date(jan4);startOfWeek.setDate(jan4.getDate()-(jan4.getDay()||7)+1);const cw=Math.ceil(((d-startOfWeek)/86400000+1)/7);return`CW${cw} ${d.getFullYear()}`;}
 
 // ── Plan ──────────────────────────────────────────────────────────────────
 const PLAN={
@@ -99,7 +93,7 @@ const PLAN={
     {n:'Hammer Curl',s:3,t:10,note:'Brachialis and forearm thickness.'},
   ]},
   Tuesday:{focus:'Pull',color:'#2A7BE8',hk:'Pull',exercises:[
-    {n:'Lat Pulldown',s:5,t:0,note:'PROTOCOL: 60kg×10 / 68kg×8 / 70kg×6 / 73kg×max / 60kg×12. Add 1 rep on set 4 weekly → +1kg when hitting 8.'},
+    {n:'Lat Pulldown',s:5,t:0,note:'PROTOCOL: 60kg×10 / 68kg×8 / 70kg×6 / 75kg×max / 60kg×12. Add 1 rep on set 4 weekly → +1kg when hitting 8.'},
     {n:'Wide-Grip Row',s:3,t:10,note:'Upper back and rhomboids. Squeeze at top.'},
     {n:'Triangle Cable Row',s:3,t:10,note:'Lat thickness. Drive elbows back and down.'},
     {n:'Single Arm Cable Pulldown',s:3,t:12,note:'Unilateral. Each lat independently. Fixes imbalances. Full ROM.'},
@@ -136,18 +130,21 @@ const PLAN={
   Sunday:{focus:'Rest',color:'#2A2A2A',hk:null,exercises:[]},
 };
 const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const TRAINING_DAYS=['Monday','Tuesday','Thursday','Friday'];
 
 const INCREMENT={'Incline Smith Machine Press':2.5,'Flat Machine Press':2.5,'Shoulder Press':2.5,'Barbell RDL':2.5,'Leg Press':5,'Cable Fly High→Low':1,'Cable Fly Low→High':1,'Cable Lateral Raise':1,'Cable Curl (Straight Bar)':1,'Bayesian Curl':1,'Hammer Curl':1,'Lat Pulldown':1,'Triangle Cable Row':2,'Wide-Grip Row':2,'Single Arm Cable Pulldown':2,'Rear Delt Fly':1,'Overhead Triceps Extension':2,'Rope Pushdown':1,'Hamstring Curl':2,'Back Extension':2,'Hip Adduction':2,'Hip Abduction':2,'Calf Raises':2};
 
-const BEST_SEED={'Incline Smith Machine Press':{w:25,r:10},'Flat Machine Press':{w:59,r:12},'Cable Fly High→Low':{w:23,r:12},'Cable Fly Low→High':{w:23,r:12},'Cable Lateral Raise':{w:23,r:15},'Cable Curl (Straight Bar)':{w:58,r:12},'Bayesian Curl':{w:29,r:12},'Hammer Curl':{w:61,r:12},'Lat Pulldown':{w:75,r:8},'Triangle Cable Row':{w:68,r:9},'Wide-Grip Row':{w:55,r:11},'Rear Delt Fly':{w:32,r:15},'Overhead Triceps Extension':{w:54,r:12},'Rope Pushdown':{w:27,r:12},'Barbell RDL':{w:100,r:5},'Leg Press':{w:250,r:10},'Hamstring Curl':{w:73,r:12},'Back Extension':{w:25,r:12},'Hip Adduction':{w:79,r:15},'Hip Abduction':{w:95,r:15},'Calf Raises':{w:141,r:13},'Shoulder Press':{w:43,r:8},'Single Arm Cable Pulldown':{w:0,r:0}};
+const BEST_SEED={'Incline Smith Machine Press':{w:25,r:10},'Flat Machine Press':{w:59,r:12},'Cable Fly High→Low':{w:23,r:12},'Cable Fly Low→High':{w:23,r:12},'Cable Lateral Raise':{w:23,r:15},'Cable Curl (Straight Bar)':{w:59,r:10},'Bayesian Curl':{w:29,r:12},'Hammer Curl':{w:61,r:12},'Lat Pulldown':{w:75,r:8},'Triangle Cable Row':{w:68,r:9},'Wide-Grip Row':{w:55,r:11},'Rear Delt Fly':{w:32,r:15},'Overhead Triceps Extension':{w:54,r:12},'Rope Pushdown':{w:27,r:12},'Barbell RDL':{w:100,r:5},'Leg Press':{w:250,r:10},'Hamstring Curl':{w:73,r:12},'Back Extension':{w:25,r:12},'Hip Adduction':{w:79,r:15},'Hip Abduction':{w:95,r:15},'Calf Raises':{w:141,r:13},'Shoulder Press':{w:43,r:8},'Single Arm Cable Pulldown':{w:0,r:0}};
 
-const SEED_H={"Push":{"Incline Smith Machine Press":[{"date":"15/06/2026","weight":23,"reps":10},{"date":"22/06/2026","weight":22,"reps":10},{"date":"30/06/2026","weight":23,"reps":7},{"date":"04/07/2026","weight":23,"reps":10}],"Flat Machine Press":[{"date":"15/06/2026","weight":52,"reps":12},{"date":"22/06/2026","weight":59,"reps":12},{"date":"30/06/2026","weight":59,"reps":11},{"date":"04/07/2026","weight":59,"reps":12}],"Cable Fly High→Low":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":23,"reps":9},{"date":"04/07/2026","weight":23,"reps":12}],"Cable Fly Low→High":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":23,"reps":10},{"date":"04/07/2026","weight":23,"reps":12}],"Cable Lateral Raise":[{"date":"22/06/2026","weight":23,"reps":15},{"date":"30/06/2026","weight":18,"reps":14},{"date":"04/07/2026","weight":18,"reps":15}],"Cable Curl (Straight Bar)":[{"date":"15/06/2026","weight":56,"reps":12},{"date":"22/06/2026","weight":56,"reps":12},{"date":"30/06/2026","weight":58,"reps":10},{"date":"04/07/2026","weight":58,"reps":10}],"Bayesian Curl":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":27,"reps":11},{"date":"04/07/2026","weight":27,"reps":12}],"Hammer Curl":[{"date":"22/06/2026","weight":56,"reps":12},{"date":"30/06/2026","weight":59,"reps":12},{"date":"04/07/2026","weight":59,"reps":12}]},"Pull":{"Lat Pulldown":[{"date":"16/06/2026","weight":73,"reps":12},{"date":"01/07/2026","weight":75,"reps":8},{"date":"08/07/2026","weight":75,"reps":8}],"Wide-Grip Row":[{"date":"16/06/2026","weight":28,"reps":10},{"date":"01/07/2026","weight":52,"reps":12},{"date":"08/07/2026","weight":52,"reps":9}],"Triangle Cable Row":[{"date":"16/06/2026","weight":66,"reps":10},{"date":"01/07/2026","weight":68,"reps":9},{"date":"08/07/2026","weight":68,"reps":8}],"Rear Delt Fly":[{"date":"01/07/2026","weight":18,"reps":10},{"date":"08/07/2026","weight":18,"reps":10}],"Overhead Triceps Extension":[{"date":"16/06/2026","weight":52,"reps":12},{"date":"01/07/2026","weight":54,"reps":12},{"date":"08/07/2026","weight":54,"reps":12}],"Rope Pushdown":[{"date":"16/06/2026","weight":20,"reps":12},{"date":"01/07/2026","weight":25,"reps":9},{"date":"08/07/2026","weight":25,"reps":8}]},"Legs":{"Barbell RDL":[{"date":"03/07/2026","weight":90,"reps":9},{"date":"10/07/2026","weight":90,"reps":9}],"Leg Press":[{"date":"28/05/2026","weight":250,"reps":10},{"date":"03/07/2026","weight":250,"reps":10},{"date":"10/07/2026","weight":250,"reps":10}],"Hamstring Curl":[{"date":"03/07/2026","weight":59,"reps":9},{"date":"10/07/2026","weight":59,"reps":10}],"Back Extension":[{"date":"03/07/2026","weight":25,"reps":12},{"date":"10/07/2026","weight":25,"reps":12}],"Hip Adduction":[{"date":"03/07/2026","weight":79,"reps":12},{"date":"10/07/2026","weight":79,"reps":12}],"Hip Abduction":[{"date":"03/07/2026","weight":95,"reps":15},{"date":"10/07/2026","weight":95,"reps":15}],"Calf Raises":[{"date":"03/07/2026","weight":141,"reps":10},{"date":"10/07/2026","weight":141,"reps":13}]},"Upper":{"Incline Smith Machine Press":[{"date":"04/07/2026","weight":23,"reps":10}],"Shoulder Press":[{"date":"04/07/2026","weight":43,"reps":8}],"Cable Fly High→Low":[{"date":"04/07/2026","weight":23,"reps":12}],"Cable Fly Low→High":[{"date":"04/07/2026","weight":23,"reps":10}],"Lat Pulldown":[{"date":"04/07/2026","weight":75,"reps":8}],"Wide-Grip Row":[{"date":"04/07/2026","weight":55,"reps":11}],"Cable Lateral Raise":[{"date":"04/07/2026","weight":18,"reps":13}],"Rear Delt Fly":[{"date":"04/07/2026","weight":20,"reps":9}],"Cable Curl (Straight Bar)":[{"date":"04/07/2026","weight":59,"reps":8}],"Hammer Curl":[{"date":"04/07/2026","weight":61,"reps":12}],"Rope Pushdown":[{"date":"04/07/2026","weight":25,"reps":8}]}};
+const SEED_H={"Push":{"Incline Smith Machine Press":[{"date":"15/06/2026","weight":23,"reps":10},{"date":"22/06/2026","weight":22,"reps":10},{"date":"30/06/2026","weight":23,"reps":7},{"date":"04/07/2026","weight":23,"reps":10}],"Flat Machine Press":[{"date":"15/06/2026","weight":52,"reps":12},{"date":"22/06/2026","weight":59,"reps":12},{"date":"30/06/2026","weight":59,"reps":11},{"date":"04/07/2026","weight":59,"reps":12}],"Cable Fly High→Low":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":23,"reps":9},{"date":"04/07/2026","weight":23,"reps":12}],"Cable Fly Low→High":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":23,"reps":10},{"date":"04/07/2026","weight":23,"reps":12}],"Cable Lateral Raise":[{"date":"22/06/2026","weight":23,"reps":15},{"date":"30/06/2026","weight":18,"reps":14},{"date":"04/07/2026","weight":18,"reps":15},{"date":"11/07/2026","weight":18,"reps":15}],"Cable Curl (Straight Bar)":[{"date":"15/06/2026","weight":56,"reps":12},{"date":"22/06/2026","weight":56,"reps":12},{"date":"30/06/2026","weight":58,"reps":10},{"date":"04/07/2026","weight":58,"reps":10},{"date":"11/07/2026","weight":59,"reps":10}],"Bayesian Curl":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":27,"reps":11},{"date":"04/07/2026","weight":27,"reps":12},{"date":"11/07/2026","weight":27,"reps":12}],"Hammer Curl":[{"date":"22/06/2026","weight":56,"reps":12},{"date":"30/06/2026","weight":59,"reps":12},{"date":"04/07/2026","weight":59,"reps":12},{"date":"11/07/2026","weight":59,"reps":12}]},"Pull":{"Lat Pulldown":[{"date":"16/06/2026","weight":73,"reps":12},{"date":"01/07/2026","weight":75,"reps":8},{"date":"08/07/2026","weight":75,"reps":8}],"Wide-Grip Row":[{"date":"16/06/2026","weight":28,"reps":10},{"date":"01/07/2026","weight":52,"reps":12},{"date":"08/07/2026","weight":52,"reps":9}],"Triangle Cable Row":[{"date":"16/06/2026","weight":66,"reps":10},{"date":"01/07/2026","weight":68,"reps":9},{"date":"08/07/2026","weight":68,"reps":8}],"Rear Delt Fly":[{"date":"01/07/2026","weight":18,"reps":10},{"date":"08/07/2026","weight":18,"reps":10}],"Overhead Triceps Extension":[{"date":"16/06/2026","weight":52,"reps":12},{"date":"01/07/2026","weight":54,"reps":12},{"date":"08/07/2026","weight":54,"reps":12}],"Rope Pushdown":[{"date":"16/06/2026","weight":20,"reps":12},{"date":"01/07/2026","weight":25,"reps":9},{"date":"08/07/2026","weight":25,"reps":8}]},"Legs":{"Barbell RDL":[{"date":"03/07/2026","weight":90,"reps":9},{"date":"10/07/2026","weight":90,"reps":9}],"Leg Press":[{"date":"28/05/2026","weight":250,"reps":10},{"date":"03/07/2026","weight":250,"reps":10},{"date":"10/07/2026","weight":250,"reps":10}],"Hamstring Curl":[{"date":"03/07/2026","weight":59,"reps":9},{"date":"10/07/2026","weight":59,"reps":10}],"Back Extension":[{"date":"03/07/2026","weight":25,"reps":12},{"date":"10/07/2026","weight":25,"reps":12}],"Hip Adduction":[{"date":"03/07/2026","weight":79,"reps":12},{"date":"10/07/2026","weight":79,"reps":12}],"Hip Abduction":[{"date":"03/07/2026","weight":95,"reps":15},{"date":"10/07/2026","weight":95,"reps":15}],"Calf Raises":[{"date":"03/07/2026","weight":141,"reps":10},{"date":"10/07/2026","weight":141,"reps":13}]},"Upper":{"Incline Smith Machine Press":[{"date":"04/07/2026","weight":23,"reps":10}],"Shoulder Press":[{"date":"04/07/2026","weight":43,"reps":8}],"Cable Fly High→Low":[{"date":"04/07/2026","weight":23,"reps":12}],"Cable Fly Low→High":[{"date":"04/07/2026","weight":23,"reps":10}],"Lat Pulldown":[{"date":"04/07/2026","weight":75,"reps":8}],"Wide-Grip Row":[{"date":"04/07/2026","weight":55,"reps":11}],"Cable Lateral Raise":[{"date":"04/07/2026","weight":18,"reps":13}],"Rear Delt Fly":[{"date":"04/07/2026","weight":20,"reps":9}],"Cable Curl (Straight Bar)":[{"date":"04/07/2026","weight":59,"reps":8}],"Hammer Curl":[{"date":"04/07/2026","weight":61,"reps":12}],"Rope Pushdown":[{"date":"04/07/2026","weight":25,"reps":8}]}};
 
 // ── State ─────────────────────────────────────────────────────────────────
 let activeDay=(()=>{const d=new Date().getDay();return DAYS[d===0?6:d-1];})();
+let activeTab='log'; // 'log' or 'history'
 let logs={};let cache={};let globalCache={};let saveStatus={};let done=new Set();let openEx=null;
-let exerciseOrder={};let touchDragIdx=null;let touchClone=null;let touchCards=[];let dragSrc=null;
-let aiPreview=null;let aiSummary=null;let aiLoading=false;
+let exerciseOrder={};let touchDragIdx=null;let touchClone=null;let touchCards=[];
+let historyData={}; // weekKey -> { dayName -> { exName -> {maxW,avgR} } }
+let historyLoaded=false;
 
 // ── Cache ─────────────────────────────────────────────────────────────────
 function ck(hk,n){return hk+'__'+n;}
@@ -163,71 +160,50 @@ function getH(hk,n){return cache[ck(hk,n)]||[];}
 function inject(hk,n,date,w,r){
   const k=ck(hk,n);if(!cache[k])cache[k]=[];
   cache[k]=cache[k].filter(e=>e.date!==date);cache[k].push({date,weight:w,reps:r});
-  cache[k].sort((a,b)=>parseDate(a.date)-parseDate(b.date));if(cache[k].length>10)cache[k]=cache[k].slice(-10);
+  cache[k].sort((a,b)=>parseDate(a.date)-parseDate(b.date));if(cache[k].length>12)cache[k]=cache[k].slice(-12);
   if(!globalCache[n])globalCache[n]=[];
   globalCache[n]=globalCache[n].filter(e=>e.date!==date);globalCache[n].push({date,weight:w,reps:r});
-  globalCache[n].sort((a,b)=>parseDate(a.date)-parseDate(b.date));if(globalCache[n].length>20)globalCache[n]=globalCache[n].slice(-20);
+  globalCache[n].sort((a,b)=>parseDate(a.date)-parseDate(b.date));if(globalCache[n].length>24)globalCache[n]=globalCache[n].slice(-24);
 }
 function removeH(hk,n,date){const k=ck(hk,n);if(cache[k])cache[k]=cache[k].filter(e=>e.date!==date);if(globalCache[n])globalCache[n]=globalCache[n].filter(e=>e.date!==date);}
 function getGlobalBest(n){const seed=BEST_SEED[n];let best=seed&&seed.w>0?{w:seed.w,r:seed.r}:null;for(const e of(globalCache[n]||[])){if(!best||e.weight>best.w||(e.weight===best.w&&(e.reps||0)>(best.r||0)))best={w:e.weight,r:e.reps||0};}return best;}
 function getGlobalLast(n){const g=globalCache[n]||[];return g.length>0?g[g.length-1]:null;}
 function getWeekBest(n){const tw=(globalCache[n]||[]).filter(e=>isThisWeek(e.date));return tw.length>0?tw.reduce((b,e)=>e.weight>b.weight?e:b):null;}
 function getTarget(exName,targetReps){if(targetReps===0)return null;const last=getGlobalLast(exName);if(!last)return null;const inc=INCREMENT[exName]||1;if((last.reps||0)>=targetReps)return{w:last.weight+inc,ready:true};return{w:last.weight,ready:false};}
-
-// ── Order ─────────────────────────────────────────────────────────────────
 function getOrder(d){if(!exerciseOrder[d])exerciseOrder[d]=PLAN[d].exercises.map((_,i)=>i);return exerciseOrder[d];}
 function getOrderedExercises(d){return getOrder(d).map(i=>PLAN[d].exercises[i]);}
 
-// ── AI ────────────────────────────────────────────────────────────────────
-async function callClaude(prompt){
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-  });
-  const data=await res.json();
-  return data.content?.[0]?.text||'';
-}
-
-function buildSessionContext(){
-  const day=PLAN[activeDay];
-  const orderedEx=getOrderedExercises(activeDay);
-  const sessionData=orderedEx.map(ex=>{
-    const exLogs=logs[ex.n]||{};
-    const vals=Object.values(exLogs).filter(v=>typeof v==='object'&&(v.w||v.weight));
-    const ws=vals.map(s=>parseFloat(s.w||s.weight)).filter(w=>!isNaN(w)&&w>0);
-    const rs=vals.map(s=>parseInt(s.r||s.reps)).filter(r=>!isNaN(r)&&r>0);
-    const last=getGlobalLast(ex.n);
-    const best=getGlobalBest(ex.n);
-    return{name:ex.n,target:`${ex.s}×${ex.t||'protocol'}`,logged:ws.length>0,maxW:ws.length?Math.max(...ws):null,avgR:rs.length?Math.round(rs.reduce((a,b)=>a+b)/rs.length):null,last:last?`${last.weight}kg×${last.reps}`:null,best:best?`${best.w}kg×${best.r}`:null};
-  }).filter(e=>!e.name.includes('Crunches')&&!e.name.includes('Raises')||e.logged);
-  return sessionData;
-}
-
-async function loadAIPreview(){
-  if(aiLoading||aiPreview)return;
-  aiLoading=true;render();
-  const day=PLAN[activeDay];
-  const orderedEx=getOrderedExercises(activeDay);
-  const exList=orderedEx.map(ex=>{
-    const last=getGlobalLast(ex.n);
-    const target=getTarget(ex.n,ex.t);
-    return`- ${ex.n}: last=${last?`${last.weight}kg×${last.reps}`:'no data'}, target today=${target?`${target.w}kg`:'see protocol'}`;
-  }).join('\n');
-  const prompt=`You are a fitness coach. Sanjeeb's goal is lean aesthetic physique (David Laid style), currently lean bulking. Today is ${activeDay} — ${day.focus} day. His exercises and targets:\n${exList}\n\nGive a SHORT pre-workout briefing (4-6 bullet points max). Focus on: key lifts to push hard today, what to prioritize, any form cues for the most important exercises, mental focus. Be direct, no fluff. Use simple text only, no markdown headers.`;
-  try{aiPreview=await callClaude(prompt);}catch(e){aiPreview='Could not load preview. Check connection.';}
-  aiLoading=false;render();
-}
-
-async function loadAISummary(){
-  if(aiLoading)return;
-  const sessionData=buildSessionContext();
-  const logged=sessionData.filter(e=>e.logged);
-  if(logged.length===0){toast('Log some sets first',true);return;}
-  aiLoading=true;aiSummary=null;render();
-  const dataStr=logged.map(e=>`${e.name}: ${e.maxW}kg×${e.avgR} (target ${e.target}, last ${e.last||'n/a'}, best ${e.best||'n/a'})`).join('\n');
-  const prompt=`You are a fitness coach reviewing Sanjeeb's workout. Goal: lean aesthetic physique, lean bulk phase. Today's ${activeDay} session:\n${dataStr}\n\nGive a post-workout analysis (6-8 bullet points). Cover: PRs hit, what improved, what stalled or dropped, form concerns if weights jumped big, what to focus on next session. Be specific with numbers. End with one clear priority for next week. Direct tone, no fluff, no markdown headers, just clean bullet points with • symbol.`;
-  try{aiSummary=await callClaude(prompt);}catch(e){aiSummary='Could not load summary. Check connection.';}
-  aiLoading=false;render();
+// ── Dual sparkline (weight + reps) ────────────────────────────────────────
+function dualSpark(data, color) {
+  const pts = data.filter(d => d.weight > 0);
+  if (pts.length < 2) return '';
+  const W = 64, H = 28;
+  // Weight line
+  const ws = pts.map(d => d.weight);
+  const wMin = Math.min(...ws), wMax = Math.max(...ws), wRng = wMax - wMin || 1;
+  const wPts = pts.map((d, i) => `${(i/(pts.length-1))*W},${4+((wMax-d.weight)/wRng)*(H/2-4)}`).join(' ');
+  // Reps line — scaled to bottom half
+  const rs = pts.map(d => d.reps || 0).filter(r => r > 0);
+  let rLine = '';
+  if (rs.length >= 2 && pts.every(d => d.reps > 0)) {
+    const rMin = Math.min(...rs), rMax = Math.max(...rs), rRng = rMax - rMin || 1;
+    const rPts = pts.map((d, i) => `${(i/(pts.length-1))*W},${H/2+2+((rMax-(d.reps||0))/rRng)*(H/2-4)}`).join(' ');
+    rLine = `<polyline points="${rPts}" fill="none" stroke="#555" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2,2"/>`;
+    // Last reps dot
+    const lrp = pts[pts.length-1];
+    const lrx = W, lry = H/2+2+((rMax-(lrp.reps||0))/rRng)*(H/2-4);
+    rLine += `<circle cx="${lrx}" cy="${lry}" r="2" fill="#555"/>`;
+  }
+  // Last weight dot
+  const [lx, ly] = wPts.split(' ').pop().split(',');
+  // Divider line
+  const divider = `<line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="#1A1A1A" stroke-width="0.5"/>`;
+  return `<svg width="${W}" height="${H}" style="display:block;flex-shrink:0">
+    ${divider}
+    <polyline points="${wPts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+    <circle cx="${lx}" cy="${ly}" r="2.5" fill="${color}"/>
+    ${rLine}
+  </svg>`;
 }
 
 // ── Firebase ──────────────────────────────────────────────────────────────
@@ -257,7 +233,7 @@ async function saveEx(exName){
     if(maxW&&day.hk){
       const hRef=doc(db,upath(`history/${day.hk}`));const hSnap=await getDoc(hRef);const hd=hSnap.exists()?hSnap.data():{};
       const arr=(hd[exName]||[]).filter(e=>e.date!==todayStr);arr.push({date:todayStr,weight:maxW,reps:bestR});
-      arr.sort((a,b)=>parseDate(a.date)-parseDate(b.date));hd[exName]=arr.slice(-20);
+      arr.sort((a,b)=>parseDate(a.date)-parseDate(b.date));hd[exName]=arr.slice(-24);
       await setDoc(hRef,hd);inject(day.hk,exName,todayStr,maxW,bestR);
     }
     done.add(exName);saveStatus[exName]='go';
@@ -278,11 +254,78 @@ async function delEntry(hk,n,date){
   }catch(e){toast('⚠ Delete failed',true);}render();
 }
 
+// ── History tab ───────────────────────────────────────────────────────────
+async function loadHistory(){
+  if(!user)return;
+  historyData={};
+  // Load all sessions from Firebase
+  try{
+    // We fetch each known week by scanning sessions for each training day
+    // We'll load last 12 weeks
+    const allWeeks=new Set([weekKey]);
+    // Generate last 12 week keys
+    for(let i=1;i<=12;i++){
+      const d=new Date(weekKey);d.setDate(d.getDate()-i*7);
+      allWeeks.add(d.toISOString().slice(0,10));
+    }
+    for(const wk of allWeeks){
+      for(const dayName of TRAINING_DAYS){
+        try{
+          const snap=await getDoc(doc(db,upath(`sessions/${wk}_${dayName}`)));
+          if(!snap.exists())continue;
+          const sets=snap.data().sets||{};
+          if(!historyData[wk])historyData[wk]={};
+          historyData[wk][dayName]={};
+          const day=PLAN[dayName];
+          for(const ex of day.exercises){
+            const es=sets[ex.n];if(!es)continue;
+            const vals=Object.values(es).filter(v=>typeof v==='object');
+            const ws=vals.map(s=>parseFloat(s.w||s.weight)).filter(w=>!isNaN(w)&&w>0);
+            const rs=vals.map(s=>parseInt(s.r||s.reps)).filter(r=>!isNaN(r)&&r>0);
+            if(!ws.length)continue;
+            const maxW=Math.max(...ws);const avgR=rs.length?Math.round(rs.reduce((a,b)=>a+b)/rs.length):null;
+            historyData[wk][dayName][ex.n]={maxW,avgR,smith:!!ex.smith};
+          }
+          if(!Object.keys(historyData[wk][dayName]).length)delete historyData[wk][dayName];
+        }catch(e){}
+      }
+      if(historyData[wk]&&!Object.keys(historyData[wk]).length)delete historyData[wk];
+    }
+  }catch(e){console.error('History load error:',e);}
+  historyLoaded=true;
+  render();
+}
+
+function buildWeekText(wk){
+  const lines=[`${cwLabel(wk)} (${wk})`,''];
+  const wkData=historyData[wk]||{};
+  for(const dayName of TRAINING_DAYS){
+    const dayData=wkData[dayName];if(!dayData||!Object.keys(dayData).length)continue;
+    const day=PLAN[dayName];
+    lines.push(`── ${dayName.toUpperCase()} (${day.focus}) ──`);
+    for(const[exName,d]of Object.entries(dayData)){
+      const side=d.smith?' /side':'';
+      lines.push(`${exName}: ${d.maxW}kg${side} × ${d.avgR||'?'} reps`);
+    }
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+window.copyWeek=async function(wk){
+  const text=buildWeekText(wk);
+  window._ce=text;
+  try{await navigator.clipboard.writeText(text);toast('✓ Copied — paste into Claude');}
+  catch(e){
+    const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('✓ Copied');
+  }
+};
+
 // ── Export ────────────────────────────────────────────────────────────────
 async function exportCoach(){
   if(!user)return;
   const lines=['═══════════════════════','WEEKLY LIFT SUMMARY',`Week: ${weekKey}`,`Date: ${todayStr}`,'═══════════════════════'];
-  for(const dayName of['Monday','Tuesday','Thursday','Friday']){
+  for(const dayName of TRAINING_DAYS){
     const day=PLAN[dayName];
     try{
       const snap=await getDoc(doc(db,upath(`sessions/${weekKey}_${dayName}`)));if(!snap.exists())continue;
@@ -303,39 +346,30 @@ async function exportCoach(){
   }
   lines.push('');lines.push('═══════════════════════');lines.push('Paste into Claude with:');lines.push('weight · waist · body fat %');lines.push('═══════════════════════');
   const text=lines.join('\n');window._ce=text;
-  try{await navigator.clipboard.writeText(text);toast('✓ Copied — paste into Claude');}catch(e){showExModal(text);}
+  try{await navigator.clipboard.writeText(text);toast('✓ Copied — paste into Claude');}
+  catch(e){showExModal(text);}
 }
 
 function showExModal(text){
   window._ce=text;const m=document.createElement('div');m.id='exModal';m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
   const card=document.createElement('div');card.style.cssText='background:#111;border:1px solid #222;border-radius:12px;padding:18px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px;max-height:80vh;';
   const title=document.createElement('div');title.style.cssText='font-size:14px;font-weight:700;';title.textContent='Export for Coach';
-  const sub=document.createElement('div');sub.style.cssText='font-size:11px;color:#555;';sub.textContent='Tap Copy → paste into Claude';
   const ta=document.createElement('textarea');ta.readOnly=true;ta.value=text;ta.style.cssText='background:#0A0A0A;border:1px solid #1A1A1A;border-radius:8px;color:#888;font-size:11px;padding:10px;flex:1;min-height:180px;resize:none;font-family:monospace;line-height:1.6;width:100%;';
   const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;';
   const cp=document.createElement('button');cp.style.cssText='flex:1;padding:11px;background:#0A1A0A;border:1px solid #1A3A1A;border-radius:8px;color:#4ADE80;font-size:13px;font-weight:700;cursor:pointer;';cp.textContent='📋 Copy';
   cp.onclick=async()=>{try{await navigator.clipboard.writeText(window._ce);}catch(e){ta.select();document.execCommand('copy');}toast('✓ Copied');document.getElementById('exModal')?.remove();};
   const cl=document.createElement('button');cl.style.cssText='padding:11px 16px;background:#161616;border:1px solid #222;border-radius:8px;color:#555;font-size:13px;cursor:pointer;';cl.textContent='Close';cl.onclick=()=>document.getElementById('exModal')?.remove();
-  row.append(cp,cl);card.append(title,sub,ta,row);m.append(card);document.body.append(m);
+  row.append(cp,cl);card.append(title,ta,row);m.append(card);document.body.append(m);
 }
 window.exportCoach=exportCoach;
 
-// ── Sparkline ─────────────────────────────────────────────────────────────
-function spark(data,color){
-  const v=data.map(d=>d.weight).filter(x=>x>0);if(v.length<2)return'';
-  const mn=Math.min(...v),mx=Math.max(...v),rng=mx-mn||1;const W=52,H=18;
-  const pts=v.map((x,i)=>`${(i/(v.length-1))*W},${H-((x-mn)/rng)*(H-3)-1.5}`).join(' ');
-  const[lx,ly]=pts.split(' ').pop().split(',');
-  return`<svg width="${W}" height="${H}" style="display:block;flex-shrink:0"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/><circle cx="${lx}" cy="${ly}" r="2.5" fill="${color}"/></svg>`;
-}
-
-// ── Input IDs ─────────────────────────────────────────────────────────────
+// ── Input helpers ─────────────────────────────────────────────────────────
 function iid(n,si,f){return'f_'+n.replace(/[^a-z0-9]/gi,'_')+'_'+si+'_'+f;}
 function inputCls(n,val){if(!val||isNaN(parseFloat(val)))return'';const v=parseFloat(val);const last=getGlobalLast(n);if(!last)return'';if(v>last.weight)return'pr';if(v===last.weight)return'ok';return'lo';}
 
 // ── Touch drag ────────────────────────────────────────────────────────────
 window.touchDragStart=function(e,i){
-  e.stopPropagation();touchDragIdx=i;dragSrc=i;
+  e.stopPropagation();touchDragIdx=i;
   const srcCard=document.getElementById('excard_'+i);if(!srcCard)return;
   touchCards=Array.from(document.querySelectorAll('.ex-card'));
   touchClone=srcCard.cloneNode(true);
@@ -358,7 +392,7 @@ window.touchDragEnd=function(e){
       exerciseOrder[activeDay]=newOrder;if(openEx===touchDragIdx)openEx=targetIdx;render();
     }
   }
-  touchDragIdx=null;dragSrc=null;touchCards=[];
+  touchDragIdx=null;touchCards=[];
 };
 
 // ── Login ─────────────────────────────────────────────────────────────────
@@ -384,21 +418,62 @@ window.doLogin=async function(){
   catch(e){btn.disabled=false;btn.textContent='Sign In';const m={'auth/invalid-credential':'Wrong email or password.','auth/too-many-requests':'Too many attempts.'};err.textContent=m[e.code]||'Login failed.';}
 };
 
-// ── Main render ───────────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────
 function render(){
   if(!user){renderLogin();return;}
   const day=PLAN[activeDay];const isRest=day.focus==='Rest';const isSun=activeDay==='Sunday';
-  const tabs=DAYS.map(d=>{const dp=PLAN[d],on=d===activeDay;return`<button class="tab${on?' on':''}" onclick="sw('${d}')" style="border-bottom-color:${on?dp.color:'transparent'}"><div>${d.slice(0,3).toUpperCase()}</div><div style="font-size:9px;letter-spacing:1px;margin-top:1px;color:${on?dp.color:'#2A2A2A'}">${dp.focus.toUpperCase()}</div></button>`;}).join('');
+
+  const tabs=DAYS.map(d=>{const dp=PLAN[d],on=d===activeDay&&activeTab==='log';return`<button class="tab${on?' on':''}" onclick="sw('${d}')" style="border-bottom-color:${on?dp.color:'transparent'}"><div>${d.slice(0,3).toUpperCase()}</div><div style="font-size:9px;letter-spacing:1px;margin-top:1px;color:${on?dp.color:'#2A2A2A'}">${dp.focus.toUpperCase()}</div></button>`;}).join('');
+  const histTab=`<button class="tab${activeTab==='history'?' on':''}" onclick="swTab('history')" style="border-bottom-color:${activeTab==='history'?'#6366F1':'transparent'}"><div>HIST</div><div style="font-size:9px;letter-spacing:1px;margin-top:1px;color:${activeTab==='history'?'#6366F1':'#2A2A2A'}">LOG</div></button>`;
 
   let content='';
-  if(isRest){
+
+  if(activeTab==='history'){
+    // History view
+    const weeks=Object.keys(historyData).sort((a,b)=>b.localeCompare(a));
+    let histContent='';
+    if(!historyLoaded){
+      histContent=`<div style="text-align:center;padding:40px;color:#444">Loading history...</div>`;
+    } else if(!weeks.length){
+      histContent=`<div style="text-align:center;padding:40px;color:#444">No session history found yet.</div>`;
+    } else {
+      histContent=weeks.map(wk=>{
+        const wkData=historyData[wk]||{};
+        const dayBlocks=TRAINING_DAYS.map(dayName=>{
+          const dayData=wkData[dayName];if(!dayData||!Object.keys(dayData).length)return'';
+          const day=PLAN[dayName];
+          const rows=Object.entries(dayData).map(([exName,d])=>{
+            const side=d.smith?' /side':'';
+            return`<tr><td class="ex-name">${exName}</td><td>${d.maxW}kg${side}</td><td>${d.avgR||'?'}</td></tr>`;
+          }).join('');
+          return`<div class="hist-day-block">
+            <div class="hist-day-label" style="color:${day.color};background:${day.color}18">${dayName} — ${day.focus}</div>
+            <table class="hist-table">
+              <thead><tr><th>Exercise</th><th>Weight</th><th>Reps</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>`;
+        }).join('');
+        if(!dayBlocks.trim())return'';
+        return`<div class="hist-week">
+          <div class="hist-week-hdr">
+            <div class="hist-cw">${cwLabel(wk)}</div>
+            <button class="hist-copy" onclick="copyWeek('${wk}')">📋 Copy</button>
+          </div>
+          ${dayBlocks}
+        </div>`;
+      }).filter(Boolean).join('<hr style="border:none;border-top:1px solid #111;margin:4px 0 16px">');
+    }
+    content=`<div style="padding:14px 12px 40px;max-width:800px;margin:0 auto">${histContent}</div>`;
+
+  } else if(isRest){
     content=`<div style="padding:40px 20px;text-align:center">
       <div style="font-size:32px;margin-bottom:10px">💤</div>
       <div style="color:#333;font-size:13px">Rest. Eat. Sleep. Grow.</div>
       ${isSun?`<div style="margin-top:36px;padding-top:24px;border-top:1px solid #141414">
         <div style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Sunday Review</div>
-        <button onclick="exportCoach()" style="padding:14px 28px;background:#0A0A1A;border:1px solid #1A1A3A;border-radius:10px;color:#5A7AEF;font-size:14px;font-weight:700;cursor:pointer;">📋 Export Week for Coach</button>
-        <div style="font-size:10px;color:#2A2A2A;margin-top:10px">Paste into Claude with weight · waist · BF%</div>
+        <button onclick="exportCoach()" style="padding:14px 28px;background:#0A0A1A;border:1px solid #1A1A3A;border-radius:10px;color:#5A7AEF;font-size:14px;font-weight:700;cursor:pointer;display:block;width:100%;margin-bottom:10px;">📋 Export Week for Coach</button>
+        <div style="font-size:10px;color:#2A2A2A;margin-bottom:10px">Paste into Claude with weight · waist · BF%</div>
       </div>`:''}
     </div>`;
   } else {
@@ -406,34 +481,13 @@ function render(){
     const doneCnt=[...done].filter(n=>day.exercises.find(e=>e.n===n)).length;
     const totCnt=day.exercises.filter(e=>!e.bw).length;
 
-    // AI Preview panel
-    let aiPanelHTML='';
-    if(aiPreview){
-      // Format bullet points nicely
-      const formatted=aiPreview.replace(/•\s*/g,'').split('\n').filter(l=>l.trim()).map(l=>`<div style="display:flex;gap:8px;margin-bottom:7px"><span style="color:${day.color};flex-shrink:0;margin-top:2px">▸</span><span>${l.trim()}</span></div>`).join('');
-      aiPanelHTML=`<div class="ai-panel">
-        <div class="ai-heading">🤖 AI Coach — Pre-Session Brief</div>
-        <div class="ai-text">${formatted}</div>
-      </div>`;
-    } else {
-      aiPanelHTML=`<div class="ai-panel" style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div class="ai-heading" style="margin-bottom:3px">🤖 AI Coach</div>
-          <div style="font-size:11px;color:#3A3A3A">Get your pre-session brief</div>
-        </div>
-        <button class="ai-btn ${aiLoading?'pulse':''}" onclick="doAIPreview()" ${aiLoading?'disabled':''}>
-          ${aiLoading?'Loading...':'▶ Brief me'}
-        </button>
-      </div>`;
-    }
-
     const cards=orderedExercises.map((ex,i)=>{
       const isOpen=openEx===i;const isDone=done.has(ex.n);const bw=!!ex.bw,isSmith=!!ex.smith;
       const globalH=globalCache[ex.n]||[];const globalLast=getGlobalLast(ex.n);
-      const wb=getWeekBest(ex.n);const best=getGlobalBest(ex.n);
-      const ss=saveStatus[ex.n];const repLabel=ex.t>0?`${ex.s}×${ex.t}`:`${ex.s} sets`;
+      const wb=getWeekBest(ex.n);const best=getGlobalBest(ex.n);const ss=saveStatus[ex.n];
+      const repLabel=ex.t>0?`${ex.s}×${ex.t}`:`${ex.s} sets`;
       const target=(!bw&&!wb)?getTarget(ex.n,ex.t):null;
-      const sp=(!bw&&globalH.length>1)?spark(globalH,day.color):'';
+      const sp=(!bw&&globalH.length>1)?dualSpark(globalH,day.color):'';
 
       let wPill='';
       if(!bw){
@@ -442,7 +496,7 @@ function render(){
       }
       const bPill=(!bw&&best&&best.w>0)?`<span style="font-size:9px;color:#444;margin-left:3px">│</span><span style="font-size:10px;color:#B8860B;font-weight:600;margin-left:3px">${best.w}kg×${best.r}</span><span style="font-size:9px;color:#333;margin-left:2px">best</span>`:'';
       const doneBadge=isDone?`<span style="font-size:9px;color:#4ADE80;background:#0A1A0A;border:1px solid #163316;padding:2px 6px;border-radius:12px;font-weight:600;flex-shrink:0">✓</span>`:'';
-      const targetBadge=target?`<span style="font-size:9px;color:${target.ready?'#60A5FA':'#666'};background:${target.ready?'#0A0F1A':'#0A0A0A'};border:1px solid ${target.ready?'#1A2A4A':'#1A1A1A'};padding:2px 6px;border-radius:12px;font-weight:600;flex-shrink:0">${target.ready?'→':'='}${target.w}kg</span>`:'';
+      const targetBadge=target?`<span style="font-size:9px;color:${target.ready?'#60A5FA':'#555'};background:${target.ready?'#0A0F1A':'#0A0A0A'};border:1px solid ${target.ready?'#1A2A4A':'#1A1A1A'};padding:2px 6px;border-radius:12px;font-weight:600;flex-shrink:0">${target.ready?'→':'='}${target.w}kg</span>`:'';
 
       let body='';
       if(isOpen){
@@ -484,7 +538,10 @@ function render(){
                 ${wPill}${bPill}${doneBadge}${targetBadge}
               </div>
             </div>
-            ${sp}
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">
+              ${sp}
+              ${sp?`<div style="display:flex;gap:8px;font-size:8px;color:#2A2A2A"><span style="color:${day.color}40">▬ kg</span><span style="color:#444">╌ reps</span></div>`:''}
+            </div>
             <div style="color:#1E1E1E;font-size:10px;flex-shrink:0">${isOpen?'▲':'▼'}</div>
           </div>
         </div>
@@ -492,32 +549,13 @@ function render(){
       </div>`;
     }).join('');
 
-    // AI Summary panel
-    let aiSumHTML='';
-    if(aiSummary){
-      const formatted=aiSummary.split('\n').filter(l=>l.trim()).map(l=>{const clean=l.replace(/^•\s*/,'');return`<div style="display:flex;gap:8px;margin-bottom:8px"><span style="color:${day.color};flex-shrink:0;margin-top:2px">▸</span><span>${clean}</span></div>`;}).join('');
-      aiSumHTML=`<div class="ai-panel" style="margin-top:10px">
-        <div class="ai-heading">🏁 Session Analysis</div>
-        <div class="ai-text">${formatted}</div>
-        <button class="ai-btn" style="margin-top:10px;font-size:11px" onclick="doAISummary()">↺ Refresh</button>
-      </div>`;
-    } else {
-      aiSumHTML=`<div style="margin-top:10px">
-        <button class="ai-btn full ${aiLoading?'pulse':''}" onclick="doAISummary()" ${aiLoading?'disabled':''}>
-          ${aiLoading?'⏳ Analysing...':'🏁 Analyse My Session'}
-        </button>
-      </div>`;
-    }
-
     content=`<div style="padding:12px 12px 40px;max-width:800px;margin:0 auto">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
         <div style="width:3px;height:26px;border-radius:2px;background:${day.color}"></div>
         <div style="flex:1"><div style="font-size:9px;color:#444;letter-spacing:2px;text-transform:uppercase">${activeDay}</div><div style="font-size:16px;font-weight:700">${day.focus} Day</div></div>
         <div style="font-size:10px;color:#333">${doneCnt}/${totCnt}</div>
       </div>
-      ${aiPanelHTML}
       ${cards}
-      ${aiSumHTML}
     </div>`;
   }
 
@@ -526,17 +564,21 @@ function render(){
       <div><div style="font-size:8px;letter-spacing:3px;color:#333;text-transform:uppercase;margin-bottom:1px">Training Log</div><div style="font-size:17px;font-weight:700">Workout Tracker</div></div>
       <button class="so" onclick="doSO()">Sign out</button>
     </div>
-    <div class="tabs">${tabs}</div>
+    <div class="tabs">${tabs}${histTab}</div>
     ${content}`;
 
-  if(openEx!==null&&!isRest){
+  if(openEx!==null&&activeTab==='log'&&!isRest){
     const ex=getOrderedExercises(activeDay)[openEx];
     if(ex){const firstId=ex.bw?iid(ex.n,0,'r'):iid(ex.n,0,'w');setTimeout(()=>{const el=document.getElementById(firstId);if(el&&!el.value)el.focus();},60);}
   }
 }
 
 // ── Handlers ──────────────────────────────────────────────────────────────
-window.sw=async function(d){activeDay=d;openEx=null;saveStatus={};logs={};done=new Set();aiPreview=null;aiSummary=null;aiLoading=false;render();await loadDay(d);};
+window.sw=async function(d){activeDay=d;activeTab='log';openEx=null;saveStatus={};logs={};done=new Set();render();await loadDay(d);};
+window.swTab=async function(t){
+  activeTab=t;render();
+  if(t==='history'&&!historyLoaded){await loadHistory();}
+};
 window.tog=function(i){openEx=openEx===i?null:i;render();};
 window.setLV=function(n,si,f,v){if(!logs[n])logs[n]={};if(!logs[n][si])logs[n][si]={};logs[n][si][f]=v;};
 window.doSave=function(n){saveEx(n);};
@@ -544,13 +586,11 @@ window.doDel=function(hk,n,d){delEntry(hk,n,d);};
 window.doSO=async function(){await signOut(auth);};
 window.adv=function(e,nextId){if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();if(nextId){const el=document.getElementById(nextId);if(el){el.focus();el.select();}}}};
 window.updCls=function(n,si,id){const val=logs[n]?.[si]?.w;const el=document.getElementById(id);if(!el)return;const cls=inputCls(n,val);el.className='si'+(cls?' '+cls:'');};
-window.doAIPreview=function(){loadAIPreview();};
-window.doAISummary=function(){aiSummary=null;loadAISummary();};
 
 // ── Auth ──────────────────────────────────────────────────────────────────
 onAuthStateChanged(auth,async u=>{
   if(u){user=u;initCache();render();await loadDay(activeDay);}
-  else{user=null;logs={};cache={};globalCache={};saveStatus={};openEx=null;done=new Set();renderLogin();}
+  else{user=null;logs={};cache={};globalCache={};saveStatus={};openEx=null;done=new Set();historyLoaded=false;historyData={};renderLogin();}
 });
 </script>
 </body>
