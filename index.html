@@ -50,10 +50,15 @@ input,button,textarea{font-family:inherit;}input{outline:none;}
 .hist-copy{padding:5px 12px;background:#0A0A1A;border:1px solid #1A1A3A;border-radius:6px;color:#5A7AEF;font-size:11px;cursor:pointer;font-weight:600;}
 .hist-day-block{margin-bottom:10px;}
 .hist-day-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;padding:3px 8px;border-radius:4px;display:inline-block;}
-.hist-table{width:100%;border-collapse:collapse;}
-.hist-table th{font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;text-align:left;padding:4px 6px;border-bottom:1px solid #1A1A1A;}
-.hist-table td{font-size:11px;color:#888;padding:4px 6px;border-bottom:1px solid #0E0E0E;}
-.hist-table td.ex-name{color:#CCC;font-weight:500;}
+.hist-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.hist-table th{font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;text-align:left;padding:5px 8px;border-bottom:1px solid #1A1A1A;}
+.hist-table td{font-size:11px;color:#888;padding:5px 8px;border-bottom:1px solid #0E0E0E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hist-table td.ex-name{color:#CCC;font-weight:500;width:55%;}
+.hist-table th:nth-child(1){width:55%;}
+.hist-table th:nth-child(2){width:25%;text-align:right;}
+.hist-table th:nth-child(3){width:20%;text-align:right;}
+.hist-table td:nth-child(2){text-align:right;}
+.hist-table td:nth-child(3){text-align:right;}
 .hist-table td.pr{color:#4ADE80;}
 .hist-table td.down{color:#F87171;}
 </style>
@@ -258,39 +263,33 @@ async function delEntry(hk,n,date){
 async function loadHistory(){
   if(!user)return;
   historyData={};
-  // Load all sessions from Firebase
   try{
-    // We fetch each known week by scanning sessions for each training day
-    // We'll load last 12 weeks
-    const allWeeks=new Set([weekKey]);
-    // Generate last 12 week keys
-    for(let i=1;i<=12;i++){
-      const d=new Date(weekKey);d.setDate(d.getDate()-i*7);
-      allWeeks.add(d.toISOString().slice(0,10));
-    }
-    for(const wk of allWeeks){
-      for(const dayName of TRAINING_DAYS){
-        try{
-          const snap=await getDoc(doc(db,upath(`sessions/${wk}_${dayName}`)));
-          if(!snap.exists())continue;
-          const sets=snap.data().sets||{};
-          if(!historyData[wk])historyData[wk]={};
-          historyData[wk][dayName]={};
-          const day=PLAN[dayName];
-          for(const ex of day.exercises){
-            const es=sets[ex.n];if(!es)continue;
-            const vals=Object.values(es).filter(v=>typeof v==='object');
-            const ws=vals.map(s=>parseFloat(s.w||s.weight)).filter(w=>!isNaN(w)&&w>0);
-            const rs=vals.map(s=>parseInt(s.r||s.reps)).filter(r=>!isNaN(r)&&r>0);
-            if(!ws.length)continue;
-            const maxW=Math.max(...ws);const avgR=rs.length?Math.round(rs.reduce((a,b)=>a+b)/rs.length):null;
-            historyData[wk][dayName][ex.n]={maxW,avgR,smith:!!ex.smith};
-          }
-          if(!Object.keys(historyData[wk][dayName]).length)delete historyData[wk][dayName];
-        }catch(e){}
+    // Single batch fetch of ALL session documents — much faster than sequential gets
+    const sessCol=collection(db,`users/${user.uid}/sessions`);
+    const snap=await getDocs(sessCol);
+    snap.forEach(docSnap=>{
+      const data=docSnap.data();
+      const wk=data.week;const dayName=data.day;
+      if(!wk||!dayName||!TRAINING_DAYS.includes(dayName))return;
+      const sets=data.sets||{};
+      if(!historyData[wk])historyData[wk]={};
+      historyData[wk][dayName]={};
+      const day=PLAN[dayName];
+      for(const ex of day.exercises){
+        const es=sets[ex.n];if(!es)continue;
+        const vals=Object.values(es).filter(v=>typeof v==='object');
+        const ws=vals.map(s=>parseFloat(s.w||s.weight)).filter(w=>!isNaN(w)&&w>0);
+        const rs=vals.map(s=>parseInt(s.r||s.reps)).filter(r=>!isNaN(r)&&r>0);
+        if(!ws.length)continue;
+        const maxW=Math.max(...ws);
+        const avgR=rs.length?Math.round(rs.reduce((a,b)=>a+b)/rs.length):null;
+        historyData[wk][dayName][ex.n]={maxW,avgR,smith:!!ex.smith};
       }
-      if(historyData[wk]&&!Object.keys(historyData[wk]).length)delete historyData[wk];
-    }
+      if(!Object.keys(historyData[wk][dayName]).length)delete historyData[wk][dayName];
+    });
+    // Clean empty weeks
+    for(const wk of Object.keys(historyData))
+      if(!Object.keys(historyData[wk]).length)delete historyData[wk];
   }catch(e){console.error('History load error:',e);}
   historyLoaded=true;
   render();
