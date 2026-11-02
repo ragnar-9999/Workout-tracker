@@ -182,60 +182,68 @@ function cwLabel(wk){const d=new Date(wk);const jan4=new Date(d.getFullYear(),0,
 
 // ── Plan ──────────────────────────────────────────────────────────────────
 const PLAN={
-  Monday:{focus:'Push',color:'#FF6B35',hk:'Push',exercises:[
-    {n:'Incline Smith Machine Press',s:4,t:8,note:'Per-side load — total ×2. Upper chest first, heaviest.',smith:true},
-    {n:'Cable Curl (Straight Bar)',s:3,t:10,note:'Non-competing with chest. Cable keeps full tension.'},
-    {n:'Flat Machine Press',s:3,t:10,note:'Mid chest. Second compound.'},
-    {n:'Cable Lateral Raise',s:4,t:15,note:'Side delts. Strict — no momentum.'},
-    {n:'Cable Fly High→Low',s:3,t:12,note:'Both hands. Upper chest stretch and squeeze.'},
-    {n:'Bayesian Curl',s:2,t:10,note:'Long head stretch — cable behind body.'},
-    {n:'Cable Fly Low→High',s:3,t:12,note:'Both hands. Lower chest.'},
-    {n:'Hammer Curl',s:3,t:10,note:'Brachialis and forearm thickness.'},
+  Monday:{focus:'Push',tab:'PUSH',sub:'+ Biceps',color:'#FF6B35',hk:'Push',exercises:[
+    {n:'Incline Smith Machine Press',lbl:'1',s:4,lo:8,hi:8,type:'c',smith:true,note:'Per-side load (total ×2). Warm up 1–2 light sets first.'},
+    {n:'Dips',lbl:'2',s:3,lo:8,hi:8,type:'c',note:'Bodyweight only weeks 1–2. Add 2.5 kg only when all sets are clean and pain-free. Sharp pain at the front of the shoulder → swap to Machine Chest Press 3×10. Weight field = added kg (blank = bodyweight).'},
+    {n:'Cable Lateral Raise',lbl:'3',s:4,lo:12,hi:12,type:'i',note:'Strict, no momentum.'},
+    {n:'Cable Fly Low→High',lbl:'4',s:3,lo:12,hi:12,type:'i',note:'Both hands. Control the stretch.'},
+    {n:'Cable Curl (Straight Bar)',lbl:'5',s:3,lo:10,hi:10,type:'i',note:''},
+    {n:'Incline DB Curl',lbl:'6',s:3,lo:10,hi:10,type:'i',note:'Weight per dumbbell.'},
+    {n:'Hammer Curl',lbl:'7',s:3,lo:10,hi:10,type:'i',note:''},
   ]},
-  Tuesday:{focus:'Pull',color:'#0A84FF',hk:'Pull',exercises:[
-    {n:'Lat Pulldown',s:5,t:0,note:'PROTOCOL: 60×10 / 68×8 / 70×6 / 75×max / 60×12. +1 rep set 4 weekly → +1kg at 8.'},
-    {n:'Overhead Triceps Extension',s:3,t:10,note:'Non-competing with back. Cable. Long head stretch ~54kg.'},
-    {n:'Wide-Grip Row',s:3,t:10,note:'Upper back and rhomboids. Squeeze at top.'},
-    {n:'Rope Pushdown',s:3,t:12,note:'Single handed. Lateral head. ~25kg.'},
-    {n:'Triangle Cable Row',s:3,t:10,note:'Lat thickness. Drive elbows back and down.'},
-    {n:'Single Arm Cable Pulldown',s:3,t:12,note:'Unilateral. Fixes left/right imbalances. Full ROM.'},
-    {n:'Rear Delt Fly',s:3,t:15,note:'Light. Focus on rear delt contraction only.'},
-    {n:'Cable Crunches',s:3,t:15,note:'Kneel at cable. Full spinal flexion.',bw:true},
+  Tuesday:{focus:'Pull',tab:'PULL',sub:'+ Triceps',color:'#0A84FF',hk:'Pull',exercises:[
+    {n:'Lat Pulldown',lbl:'1',s:5,lo:10,hi:10,type:'c',note:'Warm up 1–2 light sets first.'},
+    {n:'Wide-Grip Row',lbl:'2',s:3,lo:10,hi:10,type:'c',note:'Last set: partials (optional).'},
+    {n:'Triangle Cable Row',lbl:'3',s:3,lo:10,hi:10,type:'c',note:'Drive elbows back and down.'},
+    {n:'Rear Delt Fly',lbl:'4',s:3,lo:15,hi:15,type:'i',note:'Light. Feel the rear delt.'},
+    {n:'Overhead Triceps Extension',lbl:'5',s:3,lo:10,hi:10,type:'i',note:'Cable. Long-head stretch.'},
+    {n:'Rope Pushdown',lbl:'6',s:4,lo:12,hi:12,type:'i',note:'One hand — 12 reps each side. Log weight per hand.'},
+    {n:'Cable Lateral Raise',lbl:'7',s:3,lo:15,hi:15,type:'i',note:'Strict, no momentum.'},
+    {n:'Cable Crunches',lbl:'8',s:3,lo:15,hi:15,type:'i',note:'Kneel at cable. Full spinal flexion.'},
   ]},
-  Wednesday:{focus:'Rest',color:'#636366',hk:null,exercises:[]},
-  Thursday:{focus:'Legs',color:'#FF9F0A',hk:'Legs',exercises:[
-    {n:'Squat',s:4,t:8,note:'Start at 60-70kg — form and depth first. Add 5kg per session. Replaces leg press.'},
-    {n:'Barbell RDL',s:4,t:8,note:'Log TOTAL weight (plates + 20kg bar). Hip hinge after squats.'},
-    {n:'Back Extension',s:3,t:12,note:'Plate on chest. Glutes + hamstrings + lower back.'},
-    {n:'Leg Extension',s:3,t:12,note:'Only true quad isolation. Builds teardrop (vastus medialis). Key for aesthetics.'},
-    {n:'Hip Adduction',s:3,t:15,note:'Inner thigh shape. Full ROM.'},
-    {n:'Hip Abduction',s:3,t:15,note:'Outer glute. Maintain stimulus.'},
-    {n:'Calf Raises',s:4,t:12,note:'Full stretch at bottom. Pause and squeeze at top.'},
-    {n:'Hamstring Curl',s:3,t:10,note:'OPTIONAL — skip if fatigued. RDL alone covers hamstrings adequately.',bw:false},
+  Wednesday:{focus:'Rest',tab:'REST',color:'#636366',hk:null,exercises:[]},
+  Thursday:{focus:'Legs',tab:'LEGS',color:'#FF9F0A',hk:'Legs',exercises:[
+    {n:'Squat',lbl:'1',s:4,lo:8,hi:8,type:'c',note:'Depth and form first. Warm up 1–2 light sets first.'},
+    {n:'Barbell RDL',lbl:'2',s:4,lo:10,hi:10,type:'c',note:'Log TOTAL weight (plates + 20 kg bar).'},
+    {n:'Leg Extension',lbl:'3',s:3,lo:12,hi:12,type:'i',note:'Quad isolation.'},
+    {n:'Calf Raises',lbl:'4',s:4,lo:15,hi:15,type:'i',note:'Full stretch, pause at top.'},
+    {n:'Back Extension',lbl:'5',s:3,lo:12,hi:12,type:'i',note:'Plate on chest. Glutes + hamstrings + lower back.'},
+    {n:'Cable Lateral Raise',lbl:'6',s:3,lo:15,hi:15,type:'i',note:'Strict, no momentum.'},
+    {n:'Face Pull',lbl:'7',s:3,lo:15,hi:15,type:'i',note:''},
+    {n:'Hip Adduction',lbl:'8',s:3,lo:12,hi:12,type:'i',note:'Optional.'},
   ]},
-  Friday:{focus:'Upper',color:'#BF5AF2',hk:'Upper',exercises:[
-    {n:'Incline Smith Machine Press',s:3,t:10,note:'Chest first. Per-side load ×2.',smith:true},
-    {n:'Lat Pulldown',s:3,t:10,note:'V-taper. Push past 75kg.'},
-    {n:'Shoulder Press',s:4,t:8,note:'Shoulders after chest — still fresh enough.'},
-    {n:'Wide-Grip Row',s:3,t:10,note:'Upper back. Second session.'},
-    {n:'Cable Fly High→Low',s:2,t:12,note:'Chest second hit. Upper chest squeeze.'},
-    {n:'Rear Delt Fly',s:3,t:15,note:'Balance front and rear delt.'},
-    {n:'Cable Fly Low→High',s:2,t:12,note:'Lower chest. Control the stretch.'},
-    {n:'Cable Lateral Raise',s:3,t:15,note:'Shoulder width. Strict and slow.'},
-    {n:'Cable Curl (Straight Bar)',s:3,t:10,note:'Biceps second session.'},
-    {n:'Overhead Triceps Extension',s:3,t:10,note:'Long head priority — produces most tricep mass. Cable station.'},
-    {n:'Hammer Curl',s:2,t:10,note:'Brachialis.'},
-    {n:'Hanging Leg Raises',s:3,t:12,note:'Lower abs. Controlled. Full hang.',bw:true},
+  Friday:{focus:'Upper',tab:'UPPER',sub:'· Light',color:'#BF5AF2',hk:'Upper',exercises:[
+    {n:'Incline Smith Machine Press',lbl:'1',s:3,lo:10,hi:10,type:'c',smith:true,note:'Per-side load (total ×2). Warm up 1–2 light sets first.'},
+    {n:'Lat Pulldown (Neutral)',lbl:'2',s:3,lo:10,hi:10,type:'c',note:'Neutral grip.'},
+    {n:'Shoulder Press Machine',lbl:'3',s:4,lo:10,hi:10,type:'c',note:''},
+    {n:'Cable Lateral Raise',lbl:'4',s:4,lo:15,hi:15,type:'i',note:'Strict, no momentum.'},
+    {n:'Wide-Grip Row',lbl:'5',s:3,lo:10,hi:10,type:'c',note:''},
+    {n:'Overhead Triceps Extension',lbl:'6',s:4,lo:10,hi:10,type:'i',note:'Cable. Long-head stretch.'},
+    {n:'Cable Curl (Straight Bar)',lbl:'7',s:3,lo:10,hi:10,type:'i',note:''},
+    {n:'Hammer Curl',lbl:'8',s:2,lo:12,hi:12,type:'i',note:''},
+    {n:'Calf Raises',lbl:'9',s:3,lo:15,hi:15,type:'i',note:'Optional — only if the gym is quiet.'},
   ]},
-  Saturday:{focus:'Rest',color:'#636366',hk:null,exercises:[]},
-  Sunday:{focus:'Rest',color:'#636366',hk:null,exercises:[]},
+  Saturday:{focus:'Rest',tab:'REST',color:'#636366',hk:null,exercises:[]},
+  Sunday:{focus:'Rest',tab:'REST',color:'#636366',hk:null,exercises:[]},
 };
 const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const TRAINING_DAYS=['Monday','Tuesday','Thursday','Friday'];
 
-const INCREMENT={'Incline Smith Machine Press':2.5,'Flat Machine Press':2.5,'Shoulder Press':2.5,'Barbell RDL':2.5,'Leg Press':5,'Cable Fly High→Low':1,'Cable Fly Low→High':1,'Cable Lateral Raise':1,'Cable Curl (Straight Bar)':1,'Bayesian Curl':1,'Hammer Curl':1,'Lat Pulldown':1,'Triangle Cable Row':2,'Wide-Grip Row':2,'Single Arm Cable Pulldown':2,'Rear Delt Fly':1,'Overhead Triceps Extension':2,'Rope Pushdown':1,'Hamstring Curl':2,'Back Extension':2,'Hip Adduction':2,'Hip Abduction':2,'Calf Raises':2};
+// Old exercise names → current names (keeps history connected)
+const ALIASES={'Lat Pulldown (Wide)':'Lat Pulldown','Flat Machine Press':'Machine Chest Press','Shoulder Press':'Shoulder Press Machine'};
+function canon(n){return ALIASES[n]||n;}
+const BW_ADD=new Set(['Dips']);
+function fmtW(n,w){return BW_ADD.has(n)?(w>0?`+${w}kg`:'BW'):`${w}kg`;}
+const ALL_HK=['Push','Pull','Legs','Upper','UpperA','UpperB'];
+const LEGACY_FOCUS={Monday:'Push',Tuesday:'Pull',Thursday:'Legs',Friday:'Upper'};
+const FOCUS_COLOR={'Push':'#FF6B35','Pull':'#0A84FF','Legs':'#FF9F0A','Upper':'#BF5AF2','Upper A':'#FF6B35','Upper B':'#BF5AF2'};
 
-const BEST_SEED={'Incline Smith Machine Press':{w:25,r:10},'Flat Machine Press':{w:59,r:12},'Cable Fly High→Low':{w:23,r:12},'Cable Fly Low→High':{w:23,r:12},'Cable Lateral Raise':{w:23,r:15},'Cable Curl (Straight Bar)':{w:59,r:10},'Bayesian Curl':{w:29,r:12},'Hammer Curl':{w:61,r:12},'Lat Pulldown':{w:75,r:8},'Triangle Cable Row':{w:68,r:9},'Wide-Grip Row':{w:55,r:11},'Rear Delt Fly':{w:32,r:15},'Overhead Triceps Extension':{w:54,r:12},'Rope Pushdown':{w:27,r:12},'Barbell RDL':{w:100,r:5},'Leg Press':{w:250,r:10},'Hamstring Curl':{w:73,r:12},'Back Extension':{w:25,r:12},'Hip Adduction':{w:79,r:15},'Hip Abduction':{w:95,r:15},'Calf Raises':{w:141,r:13},'Shoulder Press':{w:43,r:8},'Single Arm Cable Pulldown':{w:0,r:0}};
+const INCREMENT={'Incline Smith Machine Press':2.5,'Dips':2.5,'Machine Chest Press':2.5,'Shoulder Press Machine':2.5,'Squat':5,'Barbell RDL':2.5,'Leg Extension':2,'Calf Raises':2,'Back Extension':2,'Hip Adduction':2,'Cable Crunches':2,'Lat Pulldown':1,'Lat Pulldown (Neutral)':2,'Wide-Grip Row':2,'Triangle Cable Row':2,'Cable Lateral Raise':1,'Cable Fly Low→High':1,'Incline DB Curl':2,'Overhead Triceps Extension':2,'Cable Curl (Straight Bar)':1,'Hammer Curl':1,'Rope Pushdown':1,'Rear Delt Fly':1,'Face Pull':2};
+
+const BEST_SEED={'Incline Smith Machine Press':{w:25,r:10},'Machine Chest Press':{w:59,r:12},'Cable Fly Low→High':{w:23,r:12},'Cable Lateral Raise':{w:23,r:15},'Cable Curl (Straight Bar)':{w:59,r:10},'Hammer Curl':{w:61,r:12},'Lat Pulldown':{w:75,r:8},'Triangle Cable Row':{w:68,r:9},'Wide-Grip Row':{w:55,r:11},'Rear Delt Fly':{w:32,r:15},'Overhead Triceps Extension':{w:54,r:12},'Rope Pushdown':{w:27,r:12},'Barbell RDL':{w:100,r:5},'Calf Raises':{w:141,r:13},'Hip Adduction':{w:79,r:15},'Shoulder Press Machine':{w:43,r:8}};
+
+const RULES_HTML=`<div class="card" style="padding:14px 16px"><div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--label);margin-bottom:8px">Program rules</div><div style="font-size:12px;color:var(--secondary);line-height:1.7">• Compounds: stop 1–2 reps short of failure, rest 2–3 min<br>• Isolation: last set to failure, rest 1 min<br>• Hit the rep target on every set, then add the smallest weight jump next session<br>• Deload every 6–8 weeks, or if lifts stall 2+ weeks<br>• Dips: bodyweight only for weeks 1–2. Add 2.5 kg only when all sets are clean and pain-free. Sharp pain at the front of the shoulder → swap to Machine Chest Press 3×10</div><div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--label);margin:14px 0 6px">Busy week fallback</div><div style="font-size:12px;color:var(--secondary);line-height:1.7">Skip Friday. Mon, Tue and Thu still hit every muscle once and side delts 3 times.</div></div>`;
+const WALK_HTML=`<div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:10px;margin-top:4px"><span style="font-size:20px">🚶</span><div><div style="font-size:14px;font-weight:600">Incline walk · 15–20 min</div><div style="font-size:11px;color:var(--label)">After lifting</div></div></div>`;
 
 const SEED_H={"Push":{"Incline Smith Machine Press":[{"date":"15/06/2026","weight":23,"reps":10},{"date":"22/06/2026","weight":22,"reps":10},{"date":"30/06/2026","weight":23,"reps":7},{"date":"04/07/2026","weight":23,"reps":10},{"date":"11/07/2026","weight":23,"reps":7}],"Flat Machine Press":[{"date":"15/06/2026","weight":52,"reps":12},{"date":"22/06/2026","weight":59,"reps":12},{"date":"30/06/2026","weight":59,"reps":11},{"date":"04/07/2026","weight":59,"reps":12}],"Cable Fly High→Low":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":23,"reps":9},{"date":"04/07/2026","weight":23,"reps":12}],"Cable Fly Low→High":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":23,"reps":10},{"date":"04/07/2026","weight":23,"reps":12}],"Cable Lateral Raise":[{"date":"22/06/2026","weight":23,"reps":15},{"date":"30/06/2026","weight":18,"reps":14},{"date":"04/07/2026","weight":18,"reps":15},{"date":"11/07/2026","weight":18,"reps":15}],"Cable Curl (Straight Bar)":[{"date":"15/06/2026","weight":56,"reps":12},{"date":"22/06/2026","weight":56,"reps":12},{"date":"30/06/2026","weight":58,"reps":10},{"date":"04/07/2026","weight":58,"reps":10},{"date":"11/07/2026","weight":59,"reps":10}],"Bayesian Curl":[{"date":"22/06/2026","weight":23,"reps":12},{"date":"30/06/2026","weight":27,"reps":11},{"date":"04/07/2026","weight":27,"reps":12},{"date":"11/07/2026","weight":27,"reps":12}],"Hammer Curl":[{"date":"22/06/2026","weight":56,"reps":12},{"date":"30/06/2026","weight":59,"reps":12},{"date":"04/07/2026","weight":59,"reps":12},{"date":"11/07/2026","weight":59,"reps":12}]},"Pull":{"Lat Pulldown":[{"date":"16/06/2026","weight":73,"reps":12},{"date":"01/07/2026","weight":75,"reps":8},{"date":"08/07/2026","weight":75,"reps":8}],"Wide-Grip Row":[{"date":"16/06/2026","weight":28,"reps":10},{"date":"01/07/2026","weight":52,"reps":12},{"date":"08/07/2026","weight":52,"reps":9}],"Triangle Cable Row":[{"date":"16/06/2026","weight":66,"reps":10},{"date":"01/07/2026","weight":68,"reps":9},{"date":"08/07/2026","weight":68,"reps":8}],"Rear Delt Fly":[{"date":"01/07/2026","weight":18,"reps":10},{"date":"08/07/2026","weight":18,"reps":10}],"Overhead Triceps Extension":[{"date":"16/06/2026","weight":52,"reps":12},{"date":"01/07/2026","weight":54,"reps":12},{"date":"08/07/2026","weight":54,"reps":12}],"Rope Pushdown":[{"date":"16/06/2026","weight":20,"reps":12},{"date":"01/07/2026","weight":25,"reps":9},{"date":"08/07/2026","weight":25,"reps":8}]},"Legs":{"Barbell RDL":[{"date":"03/07/2026","weight":90,"reps":9},{"date":"10/07/2026","weight":90,"reps":9}],"Squat":[],
 "Leg Extension":[],
@@ -244,60 +252,70 @@ const SEED_H={"Push":{"Incline Smith Machine Press":[{"date":"15/06/2026","weigh
 // ── State ─────────────────────────────────────────────────────────────────
 let activeDay=(()=>{const d=new Date().getDay();return DAYS[d===0?6:d-1];})();
 let activeTab='log';
-let logs={};let cache={};let globalCache={};let saveStatus={};let done=new Set();let openEx=null;
+let logs={};let globalCache={};let saveStatus={};let done=new Set();let openEx=null;
 let exerciseOrder={};let touchDragIdx=null;let touchClone=null;let touchCards=[];
 let historyData={};let historyLoaded=false;
 
-// ── Cache ─────────────────────────────────────────────────────────────────
-function ck(hk,n){return hk+'__'+n;}
+// ── Cache (global by exercise name) ───────────────────────────────────────
+function sortAll(){for(const n of Object.keys(globalCache))globalCache[n].sort((a,b)=>parseDate(a.date)-parseDate(b.date));}
 function initCache(){
-  for(const[dk,em]of Object.entries(SEED_H))for(const[n,arr]of Object.entries(em)){
-    cache[ck(dk,n)]=[...arr];
-    if(!globalCache[n])globalCache[n]=[];
+  globalCache={};
+  for(const em of Object.values(SEED_H))for(const[n0,arr]of Object.entries(em)){
+    const n=canon(n0);if(!globalCache[n])globalCache[n]=[];
     for(const e of arr){
       const ex=globalCache[n].find(x=>x.date===e.date);
       if(!ex)globalCache[n].push({...e});
       else if(e.weight>ex.weight){ex.weight=e.weight;ex.reps=e.reps;}
     }
   }
-  for(const n of Object.keys(globalCache))globalCache[n].sort((a,b)=>parseDate(a.date)-parseDate(b.date));
+  sortAll();
 }
-function getH(hk,n){return cache[ck(hk,n)]||[];}
-function inject(hk,n,date,w,r){
-  const k=ck(hk,n);if(!cache[k])cache[k]=[];
-  cache[k]=cache[k].filter(e=>e.date!==date);cache[k].push({date,weight:w,reps:r});
-  cache[k].sort((a,b)=>parseDate(a.date)-parseDate(b.date));if(cache[k].length>12)cache[k]=cache[k].slice(-12);
-  if(!globalCache[n])globalCache[n]=[];
-  globalCache[n]=globalCache[n].filter(e=>e.date!==date);globalCache[n].push({date,weight:w,reps:r});
-  globalCache[n].sort((a,b)=>parseDate(a.date)-parseDate(b.date));if(globalCache[n].length>24)globalCache[n]=globalCache[n].slice(-24);
+function getH(n){return globalCache[n]||[];}
+function inject(n0,date,w,r,minR){
+  const n=canon(n0);if(!globalCache[n])globalCache[n]=[];
+  globalCache[n]=globalCache[n].filter(e=>e.date!==date);
+  const e={date,weight:w,reps:r};if(minR!=null)e.minR=minR;
+  globalCache[n].push(e);
+  globalCache[n].sort((a,b)=>parseDate(a.date)-parseDate(b.date));
+  if(globalCache[n].length>24)globalCache[n]=globalCache[n].slice(-24);
 }
-function removeH(hk,n,date){
-  const k=ck(hk,n);if(cache[k])cache[k]=cache[k].filter(e=>e.date!==date);
-  if(globalCache[n])globalCache[n]=globalCache[n].filter(e=>e.date!==date);
-}
-// Global best — highest weight done for 2+ sets, fall back to any
+function removeH(n,date){if(globalCache[n])globalCache[n]=globalCache[n].filter(e=>e.date!==date);}
 function getGlobalBest(n){
   const seed=BEST_SEED[n];let best=seed&&seed.w>0?{w:seed.w,r:seed.r}:null;
-  for(const e of(globalCache[n]||[])){if(!best||e.weight>best.w||(e.weight===best.w&&(e.reps||0)>(best.r||0)))best={w:e.weight,r:e.reps||0};}
+  for(const e of(globalCache[n]||[])){if(e.weight>0&&(!best||e.weight>best.w||(e.weight===best.w&&(e.reps||0)>(best.r||0))))best={w:e.weight,r:e.reps||0};}
   return best;
 }
-// Global last — most recent entry across ALL day sheets for this exercise name
-function getGlobalLast(n){
-  const g=globalCache[n]||[];return g.length>0?g[g.length-1]:null;
-}
+function getGlobalLast(n){const g=globalCache[n]||[];return g.length>0?g[g.length-1]:null;}
 function getWeekBest(n){
   const tw=(globalCache[n]||[]).filter(e=>isThisWeek(e.date));
   return tw.length>0?tw.reduce((b,e)=>e.weight>b.weight?e:b):null;
 }
-function getTarget(exName,targetReps){
-  if(targetReps===0)return null;
-  const last=getGlobalLast(exName);if(!last)return null;
-  const inc=INCREMENT[exName]||1;
-  if((last.reps||0)>=targetReps)return{w:last.weight+inc,ready:true};
+// Double progression: hit the top of the rep range on ALL sets → add weight
+function getTarget(ex){
+  const last=getGlobalLast(ex.n);if(!last||!last.weight)return null;
+  const inc=INCREMENT[ex.n]||1;
+  const r=(last.minR!=null?last.minR:last.reps)||0;
+  if(r>=ex.hi)return{w:+(last.weight+inc).toFixed(2),ready:true};
   return{w:last.weight,ready:false};
 }
 function getOrder(d){if(!exerciseOrder[d])exerciseOrder[d]=PLAN[d].exercises.map((_,i)=>i);return exerciseOrder[d];}
 function getOrderedExercises(d){return getOrder(d).map(i=>PLAN[d].exercises[i]);}
+function noteHTML(ex){
+  const rule=(ex.type==='c'?'Compound · stop 1–2 reps short of failure · rest 2–3 min':'Isolation · last set to failure · rest 1 min')+(ex.ss?' · Superset: alternate with its partner, rest 60–90 s':'');
+  return`${ex.note||''}${ex.note?'<br>':''}<span style="font-style:normal;opacity:.75">${rule}</span>`;
+}
+// Best consistent set: highest weight done for 2+ sets (falls back to any)
+function topSet(es,allowZero){
+  const vals=Object.values(es||{}).filter(v=>v&&typeof v==='object');
+  const wc={};
+  for(const s of vals){const r=parseInt(s.r||s.reps)||0;const blank=(s.w===undefined||s.w===''||s.w===null)&&s.weight===undefined;const w=(allowZero&&blank&&r>0)?0:parseFloat(s.w||s.weight);if(!isNaN(w)&&(w>0||(allowZero&&r>0))){if(!wc[w])wc[w]={count:0,reps:[]};wc[w].count++;wc[w].reps.push(r);}}
+  if(!Object.keys(wc).length)return null;
+  const cons=Object.entries(wc).filter(([w,d])=>d.count>=2);
+  const pool=cons.length>0?cons:Object.entries(wc);
+  const top=pool.reduce((b,e)=>parseFloat(e[0])>parseFloat(b[0])?e:b);
+  const reps=top[1].reps.filter(r=>r>0);
+  return{w:parseFloat(top[0]),avgR:reps.length?Math.round(reps.reduce((a,b)=>a+b)/reps.length):null,maxR:reps.length?Math.max(...reps):0,minR:reps.length?Math.min(...reps):0,sc:Object.values(wc).reduce((a,d)=>a+d.count,0)};
+}
 
 // ── Dual sparkline ────────────────────────────────────────────────────────
 function dualSpark(data,color){
@@ -325,14 +343,24 @@ function dualSpark(data,color){
 }
 
 // ── Firebase ──────────────────────────────────────────────────────────────
-async function loadDay(dayName){
-  const day=PLAN[dayName];if(!day.hk||!user)return;
+async function loadAllHistory(){
+  if(!user)return;
   try{
-    const ss=await getDoc(doc(db,upath(`sessions/${weekKey}_${dayName}`)));
-    if(ss.exists()){const d=ss.data();logs=d.sets||{};done=new Set(Object.keys(logs));}
-    const hs=await getDoc(doc(db,upath(`history/${day.hk}`)));
-    if(hs.exists())for(const[n,arr]of Object.entries(hs.data()))if(Array.isArray(arr))for(const e of arr)inject(day.hk,n,e.date,e.weight,e.reps||0);
+    const snaps=await Promise.all(ALL_HK.map(hk=>getDoc(doc(db,upath(`history/${hk}`))).catch(()=>null)));
+    for(const s of snaps){
+      if(!s||!s.exists())continue;
+      for(const[n,arr]of Object.entries(s.data()))if(Array.isArray(arr))for(const e of arr)inject(n,e.date,e.weight,e.reps||0,e.minR);
+    }
   }catch(e){console.error(e);}
+}
+async function loadDay(dayName){
+  const day=PLAN[dayName];
+  if(day.hk&&user){
+    try{
+      const ss=await getDoc(doc(db,upath(`sessions/${weekKey}_${dayName}`)));
+      if(ss.exists()){const d=ss.data();logs=d.sets||{};done=new Set(Object.keys(logs).filter(k=>day.exercises.some(e=>e.n===k)));}
+    }catch(e){console.error(e);}
+  }
   render();
 }
 
@@ -340,42 +368,46 @@ async function saveEx(exName){
   if(!user)return;
   const day=PLAN[activeDay];saveStatus[exName]='spin';render();
   const el=logs[exName]||{};
-  const vals=Object.values(el).filter(v=>typeof v==='object');
-  // Consistent best: weight done for 2+ sets
-  const wCounts={};
-  for(const s of vals){const w=parseFloat(s.w||s.weight);const r=parseInt(s.r||s.reps)||0;if(!isNaN(w)&&w>0){if(!wCounts[w])wCounts[w]={count:0,maxR:0};wCounts[w].count++;if(r>wCounts[w].maxR)wCounts[w].maxR=r;}}
-  if(!Object.keys(wCounts).length){saveStatus[exName]=null;render();return;}
-  const cons=Object.entries(wCounts).filter(([w,d])=>d.count>=2).map(([w,d])=>({w:parseFloat(w),r:d.maxR}));
-  const any=Object.entries(wCounts).map(([w,d])=>({w:parseFloat(w),r:d.maxR}));
-  const pool=cons.length>0?cons:any;
-  const best=pool.reduce((b,e)=>e.w>b.w||(e.w===b.w&&e.r>b.r)?e:b);
-  const maxW=best.w;const bestR=best.r;
+  const t=topSet(el,BW_ADD.has(exName));
+  if(!t){saveStatus[exName]=null;toast('Enter weight and reps first',true);render();return;}
   try{
     const sRef=doc(db,upath(`sessions/${weekKey}_${activeDay}`));
     const sSnap=await getDoc(sRef);const ex=sSnap.exists()?(sSnap.data().sets||{}):{};
-    ex[exName]=el;await setDoc(sRef,{day:activeDay,week:weekKey,savedAt:new Date().toISOString(),sets:ex});
-    if(maxW&&day.hk){
-      const hRef=doc(db,upath(`history/${day.hk}`));const hSnap=await getDoc(hRef);const hd=hSnap.exists()?hSnap.data():{};
-      const arr=(hd[exName]||[]).filter(e=>e.date!==todayStr);arr.push({date:todayStr,weight:maxW,reps:bestR});
-      arr.sort((a,b)=>parseDate(a.date)-parseDate(b.date));hd[exName]=arr.slice(-24);
-      await setDoc(hRef,hd);inject(day.hk,exName,todayStr,maxW,bestR);
-    }
+    ex[exName]=el;
+    await setDoc(sRef,{day:activeDay,week:weekKey,plan:'v4',focus:day.focus,savedAt:new Date().toISOString(),sets:ex});
+    const hRef=doc(db,upath(`history/${day.hk}`));const hSnap=await getDoc(hRef);const hd=hSnap.exists()?hSnap.data():{};
+    const arr=(hd[exName]||[]).filter(e=>e.date!==todayStr);
+    arr.push({date:todayStr,weight:t.w,reps:t.maxR,minR:t.minR});
+    arr.sort((a,b)=>parseDate(a.date)-parseDate(b.date));hd[exName]=arr.slice(-24);
+    await setDoc(hRef,hd);
+    const prev=getGlobalLast(exName);
+    const prMsg=prev&&prev.date!==todayStr&&t.w>prev.weight?` 🏆 +${(t.w-prev.weight).toFixed(1)}kg`:'';
+    inject(exName,todayStr,t.w,t.maxR,t.minR);
     done.add(exName);saveStatus[exName]='go';
-    const prev=getGlobalLast(exName);const prMsg=prev&&maxW>prev.weight?` 🏆 +${(maxW-prev.weight).toFixed(1)}kg`:'';
     toast(`${exName.split(' ').slice(0,2).join(' ')} saved${prMsg}`);
     setTimeout(()=>{saveStatus[exName]=null;render();},2500);
   }catch(e){saveStatus[exName]=null;toast('Save failed',true);console.error(e);}
   render();
 }
 
-async function delEntry(hk,n,date){
-  removeH(hk,n,date);if(date===todayStr)done.delete(n);
+async function delEntry(n,date){
+  removeH(n,date);if(date===todayStr)done.delete(n);
   try{
-    const hRef=doc(db,upath(`history/${hk}`));const snap=await getDoc(hRef);
-    if(snap.exists()){const d=snap.data();if(d[n]){d[n]=d[n].filter(e=>e.date!==date);await setDoc(hRef,d);}}
-    if(date===todayStr){const sRef=doc(db,upath(`sessions/${weekKey}_${activeDay}`));const snap2=await getDoc(sRef);if(snap2.exists()){const d=snap2.data();if(d.sets?.[n]){delete d.sets[n];delete logs[n];await setDoc(sRef,d);}}}
+    for(const hk of ALL_HK){
+      const ref=doc(db,upath(`history/${hk}`));const snap=await getDoc(ref);if(!snap.exists())continue;
+      const d=snap.data();let ch=false;
+      for(const k of Object.keys(d)){
+        if(canon(k)===n&&Array.isArray(d[k])){const f=d[k].filter(e=>e.date!==date);if(f.length!==d[k].length){d[k]=f;ch=true;}}
+      }
+      if(ch)await setDoc(ref,d);
+    }
+    if(date===todayStr){
+      const sRef=doc(db,upath(`sessions/${weekKey}_${activeDay}`));const snap2=await getDoc(sRef);
+      if(snap2.exists()){const d=snap2.data();if(d.sets?.[n]){delete d.sets[n];delete logs[n];await setDoc(sRef,d);}}
+    }
     toast('Deleted');
-  }catch(e){toast('Delete failed',true);}render();
+  }catch(e){toast('Delete failed',true);}
+  render();
 }
 
 // ── History ───────────────────────────────────────────────────────────────
@@ -383,26 +415,23 @@ async function loadHistory(){
   if(!user)return;historyData={};
   try{
     const snap=await getDocs(collection(db,`users/${user.uid}/sessions`));
-    snap.forEach(docSnap=>{
-      const data=docSnap.data();const wk=data.week;const dayName=data.day;
-      if(!wk||!dayName||!TRAINING_DAYS.includes(dayName))return;
-      const sets=data.sets||{};
-      if(!historyData[wk])historyData[wk]={};
-      historyData[wk][dayName]={};
-      for(const ex of PLAN[dayName].exercises){
-        const es=sets[ex.n];if(!es)continue;
-        const vals=Object.values(es).filter(v=>typeof v==='object');
-        const wc={};for(const s of vals){const w=parseFloat(s.w||s.weight);const r=parseInt(s.r||s.reps)||0;if(!isNaN(w)&&w>0){if(!wc[w])wc[w]={count:0,reps:[]};wc[w].count++;wc[w].reps.push(r);}}
-        if(!Object.keys(wc).length)continue;
-        const cons=Object.entries(wc).filter(([w,d])=>d.count>=2);
-        const pool=cons.length>0?cons:Object.entries(wc);
-        const top=pool.reduce((b,[w,d])=>parseFloat(w)>parseFloat(b[0])?[w,d]:b);
-        const maxW=parseFloat(top[0]);const avgR=top[1].reps.length?Math.round(top[1].reps.reduce((a,b)=>a+b)/top[1].reps.length):null;
-        historyData[wk][dayName][ex.n]={maxW,avgR,smith:!!ex.smith};
+    snap.forEach(ds=>{
+      const data=ds.data();const wk=data.week;const dayName=data.day;if(!wk||!dayName)return;
+      const sets=data.sets||{};const isNew=(data.plan==='v3'||data.plan==='v4');
+      const focus=isNew?(data.focus||PLAN[dayName]?.focus||dayName):(LEGACY_FOCUS[dayName]||dayName);
+      const order=isNew?(PLAN[dayName]?.exercises||[]).map(e=>e.n):[];
+      const exs={};
+      for(const[k,es]of Object.entries(sets)){
+        if(!es||typeof es!=='object')continue;
+        const t=topSet(es,BW_ADD.has(canon(k)));if(!t)continue;
+        const name=canon(k);exs[name]={maxW:t.w,avgR:t.avgR,smith:name.includes('Smith')};
       }
-      if(!Object.keys(historyData[wk][dayName]).length)delete historyData[wk][dayName];
+      const list=Object.entries(exs);
+      if(!list.length)return;
+      list.sort((a,b)=>{const ia=order.indexOf(a[0]),ib=order.indexOf(b[0]);return(ia<0?999:ia)-(ib<0?999:ib);});
+      if(!historyData[wk])historyData[wk]={};
+      historyData[wk][dayName]={focus,color:FOCUS_COLOR[focus]||'#8E8E93',list};
     });
-    for(const wk of Object.keys(historyData))if(!Object.keys(historyData[wk]).length)delete historyData[wk];
   }catch(e){console.error(e);}
   historyLoaded=true;render();
 }
@@ -410,10 +439,10 @@ async function loadHistory(){
 function buildWeekText(wk){
   const lines=[`${cwLabel(wk)} (${wk})`,''];
   const wkData=historyData[wk]||{};
-  for(const dayName of TRAINING_DAYS){
-    const dd=wkData[dayName];if(!dd||!Object.keys(dd).length)continue;
-    lines.push(`── ${dayName.toUpperCase()} (${PLAN[dayName].focus}) ──`);
-    for(const[exName,d]of Object.entries(dd))lines.push(`${exName}: ${d.maxW}kg${d.smith?' /side':''} × ${d.avgR||'?'} reps`);
+  for(const dayName of DAYS){
+    const dd=wkData[dayName];if(!dd)continue;
+    lines.push(`── ${dayName.toUpperCase()} (${dd.focus}) ──`);
+    for(const[exName,d]of dd.list)lines.push(`${exName}: ${fmtW(exName,d.maxW)}${d.smith?' /side':''} × ${d.avgR||'?'} reps`);
     lines.push('');
   }
   return lines.join('\n');
@@ -435,16 +464,10 @@ async function exportCoach(){
       const sets=snap.data().sets||{};if(!Object.keys(sets).length)continue;
       lines.push('');lines.push(`── ${dayName.toUpperCase()} (${day.focus}) ──`);
       for(const ex of day.exercises){
-        const es=sets[ex.n];if(!es)continue;
-        const vals=Object.values(es).filter(v=>typeof v==='object');
-        const wc={};for(const s of vals){const w=parseFloat(s.w||s.weight);const r=parseInt(s.r||s.reps)||0;if(!isNaN(w)&&w>0){if(!wc[w])wc[w]={count:0,reps:[]};wc[w].count++;wc[w].reps.push(r);}}
-        if(!Object.keys(wc).length)continue;
-        const cons=Object.entries(wc).filter(([w,d])=>d.count>=2);const pool=cons.length>0?cons:Object.entries(wc);
-        const top=pool.reduce((b,[w,d])=>parseFloat(w)>parseFloat(b[0])?[w,d]:b);
-        const maxW=parseFloat(top[0]);const avgR=top[1].reps.length?Math.round(top[1].reps.reduce((a,b)=>a+b)/top[1].reps.length):'?';const sc=Object.values(wc).reduce((a,d)=>a+d.count,0);
+        const t=topSet(sets[ex.n],BW_ADD.has(ex.n));if(!t)continue;
         const prev=(globalCache[ex.n]||[]).filter(e=>!isThisWeek(e.date));const pb=prev.length?prev[prev.length-1]:null;
-        const trend=pb?(maxW>pb.weight?` ↑ PR +${(maxW-pb.weight).toFixed(1)}kg`:maxW<pb.weight?` ↓ -${(pb.weight-maxW).toFixed(1)}kg`:' ='):'';
-        lines.push(`${ex.n}: ${maxW}kg${ex.smith?' /side':''} × ${avgR} reps (${sc} sets)${trend}`);
+        const trend=pb?(t.w>pb.weight?` ↑ PR +${(t.w-pb.weight).toFixed(1)}kg`:t.w<pb.weight?` ↓ -${(pb.weight-t.w).toFixed(1)}kg`:' ='):'';
+        lines.push(`${ex.n}: ${fmtW(ex.n,t.w)}${ex.smith?' /side':''} × ${t.avgR||'?'} reps (${t.sc} sets)${trend}`);
       }
     }catch(e){}
   }
@@ -541,7 +564,7 @@ function render(){
 
   // Day tabs
   const dayTabs=`<div class="seg-wrap" style="padding-bottom:8px">
-    <div class="day-bar">${DAYS.map(d=>{const dp=PLAN[d],on=d===activeDay&&activeTab==='log';return`<button class="day-btn${on?' on':''}" onclick="sw('${d}')" style="${on?`border-bottom-color:${dp.color};color:${dp.color};`:''}"><div style="font-size:11px">${d.slice(0,3).toUpperCase()}</div><div style="font-size:9px;margin-top:1px;opacity:0.6">${dp.focus.slice(0,4).toUpperCase()}</div></button>`;}).join('')}
+    <div class="day-bar">${DAYS.map(d=>{const dp=PLAN[d],on=d===activeDay&&activeTab==='log';return`<button class="day-btn${on?' on':''}" onclick="sw('${d}')" style="${on?`border-bottom-color:${dp.color};color:${dp.color};`:''}"><div style="font-size:11px">${d.slice(0,3).toUpperCase()}</div><div style="font-size:9px;margin-top:1px;opacity:0.6">${dp.tab}</div></button>`;}).join('')}
     <button class="day-btn${activeTab==='history'?' on':''}" onclick="swTab('history')" style="${activeTab==='history'?'border-bottom-color:#30D158;color:#30D158;':''}"><div style="font-size:11px">HIST</div><div style="font-size:9px;margin-top:1px;opacity:0.6">LOG</div></button>
     </div>
   </div>`;
@@ -558,15 +581,11 @@ function render(){
     } else {
       body=weeks.map(wk=>{
         const wkData=historyData[wk]||{};
-        const dayBlocks=TRAINING_DAYS.map(dayName=>{
-          const dd=wkData[dayName];if(!dd||!Object.keys(dd).length)return'';
-          const dp=PLAN[dayName];
-          const rows=Object.entries(dd).map(([exName,d])=>{
-            const side=d.smith?' /s':'';
-            return`<div class="hist-row"><span class="hist-ex">${exName}</span><span class="hist-val">${d.maxW}kg${side}</span><span class="hist-val">${d.avgR||'?'}</span></div>`;
-          }).join('');
+        const dayBlocks=DAYS.map(dayName=>{
+          const dd=wkData[dayName];if(!dd)return'';
+          const rows=dd.list.map(([exName,d])=>`<div class="hist-row"><span class="hist-ex">${exName}</span><span class="hist-val">${fmtW(exName,d.maxW)}${d.smith?' /s':''}</span><span class="hist-val">${d.avgR||'?'}</span></div>`).join('');
           return`<div style="margin-bottom:12px">
-            <div class="hist-day-label" style="color:${dp.color}">${dayName} · ${dp.focus}</div>
+            <div class="hist-day-label" style="color:${dd.color}">${dayName} · ${dd.focus}</div>
             <div class="hist-card">
               <div class="hist-row-hdr"><span class="hist-hdr-lbl">Exercise</span><span class="hist-hdr-lbl">Weight</span><span class="hist-hdr-lbl">Reps</span></div>
               ${rows}
@@ -581,33 +600,33 @@ function render(){
       }).filter(Boolean).join('');
     }
     content=`<div class="scroll-content">${body}</div>`;
-
   } else if(isRest){
-    content=`<div class="rest-wrap">
+    content=`<div class="rest-wrap" style="padding-bottom:20px">
       <div class="rest-emoji">💤</div>
       <div class="rest-label">${activeDay}</div>
       <div class="rest-sub">Rest. Eat. Sleep. Grow.</div>
       ${isSun?`<button class="export-btn" onclick="exportCoach()">📋 Export Week for Coach</button><div style="font-size:12px;color:var(--label);margin-top:8px">Paste into Claude with weight · waist · BF%</div>`:''}
-    </div>`;
+    </div>
+    <div class="scroll-content" style="padding-top:0">${RULES_HTML}</div>`;
   } else {
     const ordEx=getOrderedExercises(activeDay);
     const doneCnt=[...done].filter(n=>day.exercises.find(e=>e.n===n)).length;
-    const totCnt=day.exercises.filter(e=>!e.bw).length;
+    const totCnt=day.exercises.length;const totSets=day.exercises.reduce((a,e)=>a+e.s,0);
 
     const cards=ordEx.map((ex,i)=>{
       const isOpen=openEx===i;const isDone=done.has(ex.n);const bw=!!ex.bw,isSmith=!!ex.smith;
       const globalH=globalCache[ex.n]||[];
       const globalLast=getGlobalLast(ex.n);  // GLOBAL last across all days
       const wb=getWeekBest(ex.n);const best=getGlobalBest(ex.n);const ss=saveStatus[ex.n];
-      const repLabel=ex.t>0?`${ex.s}×${ex.t}`:`${ex.s} sets`;
-      const target=(!bw&&!wb)?getTarget(ex.n,ex.t):null;
+      const rng=ex.lo===ex.hi?`${ex.hi}`:`${ex.lo}-${ex.hi}`;const repLabel=`${ex.s}×${rng}`;
+      const target=(!bw&&!wb)?getTarget(ex):null;
       const sp=(!bw&&globalH.length>1)?dualSpark(globalH,day.color):'';
 
       // Last pill — global, shows weight and reps
       let lastPill='';
       if(!bw){
-        if(wb)lastPill=`<span style="font-size:13px;font-weight:700;color:var(--primary)">${wb.weight}kg×${wb.reps||'?'}${isSmith?' /s':''}</span><span style="font-size:10px;color:var(--label);margin-left:3px">this wk</span>`;
-        else if(globalLast)lastPill=`<span style="font-size:13px;font-weight:700;color:var(--primary)">${globalLast.weight}kg×${globalLast.reps||'?'}${isSmith?' /s':''}</span><span style="font-size:10px;color:var(--label);margin-left:3px">last</span>`;
+        if(wb)lastPill=`<span style="font-size:13px;font-weight:700;color:var(--primary)">${fmtW(ex.n,wb.weight)}×${wb.reps||'?'}${isSmith?' /s':''}</span><span style="font-size:10px;color:var(--label);margin-left:3px">this wk</span>`;
+        else if(globalLast)lastPill=`<span style="font-size:13px;font-weight:700;color:var(--primary)">${fmtW(ex.n,globalLast.weight)}×${globalLast.reps||'?'}${isSmith?' /s':''}</span><span style="font-size:10px;color:var(--label);margin-left:3px">last</span>`;
       }
       const bestPill=(!bw&&best&&best.w>0)?`<span style="font-size:10px;color:var(--label);margin-left:6px">│</span><span style="font-size:11px;color:${isDark?'#B8860B':'#A0720A'};font-weight:600;margin-left:6px">${best.w}kg×${best.r}</span><span style="font-size:10px;color:var(--label);margin-left:2px">pb</span>`:'';
       const doneBadge=isDone?`<span class="badge" style="background:rgba(48,209,88,0.12);color:var(--green);margin-left:4px">✓ Done</span>`:'';
@@ -615,17 +634,17 @@ function render(){
 
       let body='';
       if(isOpen){
-        const hist=getH(day.hk,ex.n);
+        const hist=getH(ex.n);
         let recentHTML='';
         if(!bw&&hist.length>0){
-          const items=hist.slice(-5).map(r=>{const isTd=r.date===todayStr,iTw=isThisWeek(r.date);return`<div style="background:var(--bg2);border-radius:8px;padding:6px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px;border:0.5px solid ${iTw?day.color+'44':'transparent'}"><div><div style="font-size:12px;font-weight:600;color:${isTd?day.color:iTw?'var(--primary)':'var(--secondary)'}">${r.weight}kg×${r.reps||'?'}</div><div style="font-size:10px;color:var(--label)">${r.date}</div></div><button class="del-btn" onclick="doDel('${day.hk}','${ex.n}','${r.date}')">✕</button></div>`;}).join('');
+          const items=hist.slice(-5).map(r=>{const isTd=r.date===todayStr,iTw=isThisWeek(r.date);return`<div style="background:var(--bg2);border-radius:8px;padding:6px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px;border:0.5px solid ${iTw?day.color+'44':'transparent'}"><div><div style="font-size:12px;font-weight:600;color:${isTd?day.color:iTw?'var(--primary)':'var(--secondary)'}">${fmtW(ex.n,r.weight)}×${r.reps||'?'}</div><div style="font-size:10px;color:var(--label)">${r.date}</div></div><button class="del-btn" onclick="doDel('${ex.n}','${r.date}')">✕</button></div>`;}).join('');
           recentHTML=`<div style="padding:10px 14px;border-bottom:0.5px solid var(--sep)"><div style="font-size:10px;font-weight:600;color:var(--label);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">History</div><div style="display:flex;gap:6px;flex-wrap:wrap">${items}</div></div>`;
         }
-        const tgt=getTarget(ex.n,ex.t);
-        const phW=tgt?`aim ${tgt.w}kg`:(globalLast?`${globalLast.weight}`:isSmith?'kg/side':'kg');
-        const phR=ex.t>0?`${ex.t}`:'reps';
+        const tgt=getTarget(ex);
+        const phW=BW_ADD.has(ex.n)&&!globalLast?'BW':tgt?`aim ${tgt.w}kg`:(globalLast?`${globalLast.weight}`:isSmith?'kg/side':'kg');
+        const phR=rng;
         const colT=bw?'28px 1fr':'28px 1fr 1fr';
-        const hdr=bw?`<div></div><div style="font-size:10px;color:var(--label);text-transform:uppercase;text-align:center;font-weight:600">Reps</div>`:`<div></div><div style="font-size:10px;color:var(--label);text-transform:uppercase;text-align:center;font-weight:600">kg${isSmith?' /side':''}</div><div style="font-size:10px;color:var(--label);text-transform:uppercase;text-align:center;font-weight:600">Reps</div>`;
+        const hdr=bw?`<div></div><div style="font-size:10px;color:var(--label);text-transform:uppercase;text-align:center;font-weight:600">Reps</div>`:`<div></div><div style="font-size:10px;color:var(--label);text-transform:uppercase;text-align:center;font-weight:600">${BW_ADD.has(ex.n)?'+kg':'kg'}${isSmith?' /side':''}</div><div style="font-size:10px;color:var(--label);text-transform:uppercase;text-align:center;font-weight:600">Reps</div>`;
         const rows=Array.from({length:ex.s}).map((_,si)=>{
           const wv=logs[ex.n]?.[si]?.w||'';const rv=logs[ex.n]?.[si]?.r||'';
           const wId=iid(ex.n,si,'w');const rId=iid(ex.n,si,'r');const nwId=si<ex.s-1?iid(ex.n,si+1,'w'):null;const wCls=inputCls(ex.n,wv);
@@ -635,7 +654,7 @@ function render(){
         const btnCls=ss==='spin'?'save-btn spin':ss==='go'?'save-btn go':'save-btn';
         const btnTxt=ss==='spin'?'Saving…':ss==='go'?'✓ Saved':'Save';
         body=`<div style="border-top:0.5px solid var(--sep)">
-          <div style="padding:8px 14px;font-size:11px;color:var(--label);font-style:italic;border-bottom:0.5px solid var(--sep)">${ex.note}</div>
+          <div style="padding:8px 14px;font-size:11px;color:var(--label);font-style:italic;border-bottom:0.5px solid var(--sep)">${noteHTML(ex)}</div>
           ${recentHTML}
           <div style="padding:12px 14px">
             <div class="set-grid" style="grid-template-columns:${colT};margin-bottom:7px">${hdr}</div>
@@ -648,12 +667,12 @@ function render(){
       return`<div class="card ex-card${isDone?' done':''}" id="excard_${i}" style="${isDone?`border-color:rgba(48,209,88,0.2);`:''}">
         <div class="card-header">
           <span class="drag-h" ontouchstart="touchDragStart(event,${i})" ontouchend="touchDragEnd(event)">⠿</span>
-          <div style="width:28px;height:28px;border-radius:8px;background:${isDone?'rgba(48,209,88,0.12)':day.color+'18'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${isDone?'var(--green)':day.color};flex-shrink:0">${isDone?'✓':i+1}</div>
+          <div style="width:28px;height:28px;border-radius:8px;background:${isDone?'rgba(48,209,88,0.12)':day.color+'18'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${isDone?'var(--green)':day.color};flex-shrink:0">${isDone?'✓':ex.lbl}</div>
           <div style="flex:1;min-width:0;cursor:pointer" onclick="tog(${i})">
             <div style="font-size:15px;font-weight:600;letter-spacing:-0.2px;margin-bottom:3px;${isDone?'color:var(--secondary)':''}">${ex.n}</div>
             <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
               <span class="badge" style="background:${isDone?'rgba(48,209,88,0.08)':day.color+'14'};color:${isDone?'var(--green)':day.color}">${repLabel}</span>
-              ${lastPill}${bestPill}${doneBadge}${tgtBadge}
+              ${ex.ss?'<span class="badge" style="background:rgba(191,90,242,0.14);color:var(--purple)">SS</span>':''}${lastPill}${bestPill}${doneBadge}${tgtBadge}
             </div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;cursor:pointer" onclick="tog(${i})">
@@ -669,10 +688,10 @@ function render(){
     content=`<div class="scroll-content">
       <div class="section-hdr">
         <div class="day-pip" style="background:${day.color}"></div>
-        <div><div class="day-sub">${activeDay}</div><div class="day-title">${day.focus} Day</div></div>
+        <div><div class="day-sub">${activeDay} · ${totSets} sets</div><div class="day-title">${day.focus}${day.sub?' '+day.sub:''}</div></div>
         <div style="margin-left:auto;font-size:13px;color:var(--label);font-weight:500">${doneCnt}/${totCnt}</div>
       </div>
-      ${cards}
+      ${cards}${WALK_HTML}
     </div>`;
   }
 
@@ -690,7 +709,7 @@ window.swTab=async function(t){activeTab=t;render();if(t==='history'&&!historyLo
 window.tog=function(i){openEx=openEx===i?null:i;render();};
 window.setLV=function(n,si,f,v){if(!logs[n])logs[n]={};if(!logs[n][si])logs[n][si]={};logs[n][si][f]=v;};
 window.doSave=function(n){saveEx(n);};
-window.doDel=function(hk,n,d){delEntry(hk,n,d);};
+window.doDel=function(n,d){delEntry(n,d);};
 window.doSO=async function(){await signOut(auth);};
 window.adv=function(e,nextId){if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();if(nextId){const el=document.getElementById(nextId);if(el){el.focus();el.select();}}}};
 window.updCls=function(n,si,id){const val=logs[n]?.[si]?.w;const el=document.getElementById(id);if(!el)return;const cls=inputCls(n,val);el.className='set-input'+(cls?' '+cls:'');};
@@ -698,8 +717,8 @@ window.toggleTheme=function(){isDark=!isDark;applyTheme();render();};
 
 // ── Auth ──────────────────────────────────────────────────────────────────
 onAuthStateChanged(auth,async u=>{
-  if(u){user=u;initCache();render();await loadDay(activeDay);}
-  else{user=null;logs={};cache={};globalCache={};saveStatus={};openEx=null;done=new Set();historyLoaded=false;historyData={};renderLogin();}
+  if(u){user=u;initCache();render();await loadAllHistory();await loadDay(activeDay);}
+  else{user=null;logs={};globalCache={};saveStatus={};openEx=null;done=new Set();historyLoaded=false;historyData={};renderLogin();}
 });
 </script>
 </body>
